@@ -176,7 +176,7 @@ def fig1_scatter(gpu_4090, gpu_a100, fit_4090, fit_a100):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(2 * COLUMN_WIDTH + 0.4, COLUMN_WIDTH))
 
     for ax, rows, fit, title in [
-        (ax1, gpu_4090, fit_4090, f"RTX 4090 Laptop ($r^2={fit_4090['r2']:.3f}$)"),
+        (ax1, gpu_4090, fit_4090, f"RTX 4090 ($r^2={fit_4090['r2']:.3f}$)"),
         (ax2, gpu_a100, fit_a100, f"A100 SXM4 ($r^2={fit_a100['r2']:.3f}$)"),
     ]:
         for r in rows:
@@ -424,7 +424,7 @@ def fig6_cross_gpu(gpu_4090, gpu_a100):
 
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("RTX 4090 Laptop Energy (J)")
+    ax.set_xlabel("RTX 4090 Energy (J)")
     ax.set_ylabel("A100 SXM4 Energy (J)")
     ax.set_title("Cross-GPU Energy Comparison")
     ax.set_aspect("equal", adjustable="datalim")
@@ -578,7 +578,7 @@ def main():
     print("Loading data...")
     gpu_4090 = load_gpu_data(
         base / "data" / "results" / "all_results.csv",
-        "RTX 4090 Laptop", has_torchaudio=True)
+        "RTX 4090", has_torchaudio=True)
     gpu_a100 = load_gpu_data(
         base / "data" / "server_results" / "results" / "all_results.csv",
         "A100 SXM4", has_torchaudio=False)
