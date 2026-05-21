@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-Accurate energy prediction for signal processing algorithms is critical for resource-constrained and energy-aware systems, yet existing approaches rely on floating-point operation counts that ignore memory hierarchy costs, sequential dispatch overhead, and hardware implementation details. We present a physics-grounded energy model based on Transistor Operations (TOs), validated across 37 signal processing algorithms spanning 8 categories on two NVIDIA GPUs (RTX 4090 and A100 SXM4). Our four-parameter model achieves $r^2 = 0.947$ (RTX 4090) and $r^2 = 0.982$ (A100) with 80\% head-to-head ranking accuracy. Nsight Compute hardware profiling validates key corrections including split-radix FFT operation counts (99.4\% match) and complex MAC reduction on FMA hardware (99.2\% match). We identify three distinct energy regimes for sequential algorithms, with a 1{,}190$\times$ energy gap between Python-loop dispatch and fused-sequential execution. A systematic CPU-vs-GPU comparison across all 37 algorithms reveals that sequential algorithms are 10--100$\times$ more energy-efficient on CPU, challenging the assumption that GPUs are universally superior for compute.
+Accurate energy prediction for signal processing algorithms is critical for resource-constrained and energy-aware systems, yet existing approaches rely on floating-point operation counts that ignore memory hierarchy costs, sequential dispatch overhead, and hardware implementation details. We present a physics-grounded energy model based on Transistor Operations (TOs), validated across 37 signal processing algorithms spanning 8 categories on two NVIDIA GPUs (RTX 4090 and A100 SXM4). Our four-parameter model achieves $r^2 = 0.947$ (RTX 4090) and $r^2 = 0.982$ (A100) with 80\% head-to-head ranking accuracy. Nsight Compute hardware profiling validates key corrections including split-radix FFT operation counts (99.4\% match) and complex MAC reduction on FMA hardware (99.2\% match). We identify three distinct energy regimes for sequential algorithms, with a 3--7$\times$ per-step energy difference between Python-loop dispatch and fused-sequential execution. A systematic CPU-vs-GPU comparison across all 37 algorithms reveals that sequential algorithms are 10--100$\times$ more energy-efficient on CPU, challenging the assumption that GPUs are universally superior for compute.
 \end{abstract}
 
 \begin{keywords}
@@ -62,7 +62,7 @@ This paper makes four contributions:
 \itemsep0pt
 \item A four-parameter energy model for 37 signal processing algorithms across 8 categories, achieving $r^2 = 0.947$ (RTX 4090) and $r^2 = 0.982$ (A100 SXM4) with 80\% head-to-head ranking accuracy on both GPUs.
 \item Hardware-validated corrections to standard operation counts, including split-radix FFT (99.4\% match to Nsight Compute instruction counts) and complex MAC on FMA hardware (99.2\% match), with corrections that propagate to all FFT-based algorithms.
-\item Identification of three sequential energy regimes separated by three orders of magnitude: parallel, Python-loop dispatch, and fused-sequential.
+\item Identification of three sequential energy regimes with a 3--7$\times$ per-step cost difference between Python-loop dispatch and fused-sequential execution: parallel, Python-loop dispatch, and fused-sequential.
 \item A systematic CPU-vs-GPU energy comparison across all 37 algorithms showing that sequential algorithms are 10--100$\times$ more efficient on CPU, with clear category-level crossover guidance.
 \end{enumerate}
 
@@ -264,7 +264,7 @@ A classic algorithm selection problem is whether to implement FIR filtering via 
 
 \subsection{Three Sequential Energy Regimes}
 
-Sequential algorithms on GPUs fall into three distinct regimes separated by three orders of magnitude in per-step energy:
+Sequential algorithms on GPUs fall into three distinct regimes:
 
 \begin{enumerate}
 \itemsep0pt
@@ -273,7 +273,7 @@ Sequential algorithms on GPUs fall into three distinct regimes separated by thre
 \item \textbf{Fused-sequential} ($S_f > 0$): A single C++/CUDA kernel processes all $N$ timesteps serially. Per-step cost: 56\,$\mu$J (RTX 4090), 45\,$\mu$J (A100).
 \end{enumerate}
 
-The 1{,}190$\times$ gap between Python-loop and fused-sequential per-step costs (on the RTX 4090) shows that dispatch overhead, not computation, dominates sequential algorithm energy. This gap is an inherent cost of the Python/CUDA programming model and represents the single largest optimization opportunity: converting a Python-loop sequential algorithm to a fused kernel reduces per-step energy by three orders of magnitude.
+The $\alpha_o / \alpha_f$ ratio ranges from 2.8$\times$ (A100) to 6.9$\times$ (RTX 4090), confirming that Python-loop dispatch is substantially more expensive per step than fused-sequential execution. This ratio is consistent with the physical picture: $\alpha_o$ includes host-side Python interpreter and CUDA driver overhead, while $\alpha_f$ reflects only GPU-side serial execution cost.
 
 % =========================================================================
 \section{CPU vs GPU Analysis}
@@ -294,7 +294,7 @@ Figure~\ref{fig:cpugpu} shows the CPU-to-GPU energy ratio by algorithm category.
 
 \textbf{Parallel-batched algorithms} (transforms, filters, spectral, ML, compression): the GPU wins 84 of 85 comparisons, with a median efficiency advantage of 22$\times$. Batch parallelism amortizes kernel launch overhead across $B$ signals, and the GPU's throughput advantage dominates.
 
-\textbf{Sequential algorithms} (adaptive filters, state estimation): the CPU wins all 32 comparisons. The GPU's Python-loop dispatch overhead ($\alpha_o = 385$\,$\mu$J/launch) makes sequential algorithms catastrophically expensive. NLMS is 100$\times$ more energy-efficient on CPU, where the per-step overhead is simply a function call rather than a cross-device kernel launch.
+\textbf{Sequential algorithms} (adaptive filters, state estimation): the CPU wins all 32 comparisons. The GPU's Python-loop dispatch overhead ($\alpha_o = 385$\,$\mu$J/launch) makes sequential algorithms highly inefficient on GPU. NLMS is 100$\times$ more energy-efficient on CPU, where the per-step overhead is simply a function call rather than a cross-device kernel launch.
 
 \textbf{Decomposition} (SVD, PCA, FastICA, NMF): mixed results, with the CPU winning 6 of 8 comparisons. These algorithms involve eigendecomposition or matrix factorization that does not parallelize across the batch dimension. SVD shows a crossover: the CPU wins at $N = 256$ (ratio 0.59$\times$) but the GPU wins at $N \geq 1024$ (ratio 2.45$\times$) as cuSOLVER amortizes its fixed overhead.
 
@@ -327,7 +327,7 @@ Figure~\ref{fig:crossgpu} compares per-algorithm energy between the two GPUs. Mo
 \label{fig:denoising}
 \end{figure}
 
-\textbf{Practical implications.} The results provide three actionable guidelines for signal processing practitioners: (1)~Sequential algorithms should run on CPU, not GPU, unless a fused CUDA kernel is available (1{,}000$\times$ energy savings from kernel fusion). (2)~FFT-based algorithms should pad inputs to power-of-2 lengths; non-power-of-2 sizes incur up to 5$\times$ energy penalties from cuFFT's mixed-radix fallback. (3)~For algorithm selection decisions (e.g., FIR direct vs.\ FFT convolution), the TO model provides energy rankings that agree with measurement 80\% of the time without requiring hardware access.
+\textbf{Practical implications.} The results suggest three guidelines for signal processing practitioners: (1)~Sequential algorithms should run on CPU, not GPU, unless a fused CUDA kernel is available (3--7$\times$ per-step energy reduction from kernel fusion). (2)~FFT-based algorithms should pad inputs to power-of-2 lengths; non-power-of-2 sizes incur up to 5$\times$ energy penalties from cuFFT's mixed-radix fallback. (3)~For algorithm selection decisions (e.g., FIR direct vs.\ FFT convolution), the TO model provides energy rankings that agree with measurement 80\% of the time without requiring hardware access.
 
 Figure~\ref{fig:denoising} illustrates guideline~(3) for the denoising use case. The Wiener filter is 10--50$\times$ more energy-efficient than the CNN denoiser and 100--500$\times$ cheaper than the LSTM denoiser, while the Transformer denoiser is the most expensive. The TO model correctly ranks all four approaches, providing practitioners with energy-aware algorithm selection without dedicated measurement infrastructure.
 
@@ -336,7 +336,7 @@ Figure~\ref{fig:denoising} illustrates guideline~(3) for the denoising use case.
 \label{sec:conclusion}
 % =========================================================================
 
-We have presented a four-parameter energy model grounded in transistor-level operation costs that predicts GPU energy consumption for 37 signal processing algorithms with $r^2 \geq 0.947$ across two GPU architectures. Nsight Compute profiling validates that standard operation-counting assumptions (Cooley-Tukey FFT, 8-op complex MAC) systematically overpredict by 30--100\%, and that corrected formulas match hardware instruction counts to within 1\%. The identification of three sequential energy regimes, separated by three orders of magnitude, provides a principled basis for deciding when to use GPU vs.\ CPU execution. Our systematic comparison across 37 algorithms confirms that sequential signal processing algorithms are 10--100$\times$ more energy-efficient on CPU, a result with direct implications for energy-aware system design.
+We have presented a four-parameter energy model grounded in transistor-level operation costs that predicts GPU energy consumption for 37 signal processing algorithms with $r^2 \geq 0.947$ across two GPU architectures. Nsight Compute profiling validates that standard operation-counting assumptions (Cooley-Tukey FFT, 8-op complex MAC) systematically overpredict by 30--100\%, and that corrected formulas match hardware instruction counts to within 1\%. The identification of three sequential energy regimes, with per-step costs differing by 3--7$\times$ between Python-loop dispatch and fused-sequential execution, provides a principled basis for deciding when to use GPU vs.\ CPU execution. Our systematic comparison across 37 algorithms confirms that sequential signal processing algorithms are 10--100$\times$ more energy-efficient on CPU, a result with direct implications for energy-aware system design.
 
 \bibliographystyle{IEEEbib}
 \bibliography{refs}
