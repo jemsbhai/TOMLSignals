@@ -1,0 +1,23 @@
+{
+  "algorithm": "cnn_denoiser",
+  "category": "ml_enhanced",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 35666,
+  "duration_s": 5.001521110534668,
+  "idle_power_w": 32.24708474576271,
+  "mean_power_w": 64.20934,
+  "delta_power_w": 31.962255254237284,
+  "total_energy_j": 321.14436950349807,
+  "delta_energy_j": 159.8598943943654,
+  "energy_per_call_j": 0.004482136892120378,
+  "mean_temp_c": 50.77,
+  "max_temp_c": 53,
+  "mean_clock_mhz": 2078,
+  "time_per_call_us": 140.232185009103,
+  "params": {
+    "channels": 32,
+    "n_layers": 3
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "algorithm": "stft",
+  "category": "transform",
+  "signal_length": 256,
+  "batch_size": 2048,
+  "precision": "fp32",
+  "iterations": 112493,
+  "duration_s": 10.000089883804321,
+  "idle_power_w": 77.89507499999999,
+  "idle_power_std_w": 0.1620028375523088,
+  "mean_power_w": 104.1266,
+  "power_std_w": 3.2894941298017244,
+  "delta_power_w": 26.231525000000005,
+  "total_energy_j": 1041.275359294939,
+  "delta_energy_j": 262.3176077892602,
+  "energy_per_call_j": 0.0023318571625724283,
+  "mean_temp_c": 41.84,
+  "max_temp_c": 42,
+  "mean_clock_mhz": 1095,
+  "time_per_call_us": 88.89521911411663,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 42.0,
+  "thermal_wait_s": 6.006909608840942,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "window_size": 256,
+    "hop_length": 128
+  }
+}

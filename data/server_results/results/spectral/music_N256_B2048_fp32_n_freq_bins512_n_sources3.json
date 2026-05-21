@@ -1,0 +1,31 @@
+{
+  "algorithm": "music",
+  "category": "spectral",
+  "signal_length": 256,
+  "batch_size": 2048,
+  "precision": "fp32",
+  "iterations": 8024,
+  "duration_s": 10.000163555145264,
+  "idle_power_w": 77.07584999999999,
+  "idle_power_std_w": 0.1091074126721003,
+  "mean_power_w": 224.311315,
+  "power_std_w": 19.415050403122187,
+  "delta_power_w": 147.23546500000003,
+  "total_energy_j": 2243.149837269709,
+  "delta_energy_j": 1472.3787311178664,
+  "energy_per_call_j": 0.18349685083722164,
+  "mean_temp_c": 49.88,
+  "max_temp_c": 51,
+  "mean_clock_mhz": 1402,
+  "time_per_call_us": 1246.281599594375,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 41.0,
+  "thermal_wait_s": 6.006830930709839,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "n_sources": 3,
+    "n_freq_bins": 512
+  }
+}

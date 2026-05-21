@@ -1,0 +1,22 @@
+{
+  "algorithm": "iir_butter4",
+  "category": "filter",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 20163,
+  "duration_s": 5.001057147979736,
+  "idle_power_w": 25.40088333333334,
+  "mean_power_w": 38.14645999999999,
+  "delta_power_w": 12.74557666666665,
+  "total_energy_j": 190.77262645312305,
+  "delta_energy_j": 63.741357293956995,
+  "energy_per_call_j": 0.003161303243265238,
+  "mean_temp_c": 46.52,
+  "max_temp_c": 47,
+  "mean_clock_mhz": 2028,
+  "time_per_call_us": 248.03140147694967,
+  "params": {
+    "order": 4
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "algorithm": "esprit",
+  "category": "spectral",
+  "signal_length": 256,
+  "batch_size": 128,
+  "precision": "fp32",
+  "iterations": 9292,
+  "duration_s": 10.00058889389038,
+  "idle_power_w": 76.62065,
+  "idle_power_std_w": 0.11877827031911178,
+  "mean_power_w": 81.20694999999999,
+  "power_std_w": 0.660542540265198,
+  "delta_power_w": 4.586299999999994,
+  "total_energy_j": 812.1173222767114,
+  "delta_energy_j": 45.8657008440494,
+  "energy_per_call_j": 0.004936041847185687,
+  "mean_temp_c": 38.28,
+  "max_temp_c": 39,
+  "mean_clock_mhz": 1095,
+  "time_per_call_us": 1076.2579524204027,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 39.0,
+  "thermal_wait_s": 6.006706237792969,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "n_sources": 3
+  }
+}

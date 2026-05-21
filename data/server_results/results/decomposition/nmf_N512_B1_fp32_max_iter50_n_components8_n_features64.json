@@ -1,0 +1,32 @@
+{
+  "algorithm": "nmf",
+  "category": "decomposition",
+  "signal_length": 512,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 1388,
+  "duration_s": 10.006890773773193,
+  "idle_power_w": 75.09425,
+  "idle_power_std_w": 0.13347260954968007,
+  "mean_power_w": 98.398665,
+  "power_std_w": 3.489955514440692,
+  "delta_power_w": 23.30441499999999,
+  "total_energy_j": 984.6646929400991,
+  "delta_energy_j": 233.20473545168153,
+  "energy_per_call_j": 0.1680149390862259,
+  "mean_temp_c": 35.945,
+  "max_temp_c": 36,
+  "mean_clock_mhz": 1402,
+  "time_per_call_us": 7209.575485427373,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 35.0,
+  "thermal_wait_s": 5.00568962097168,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "n_features": 64,
+    "n_components": 8,
+    "max_iter": 50
+  }
+}

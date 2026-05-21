@@ -1,0 +1,30 @@
+{
+  "algorithm": "particle_1k",
+  "category": "estimation",
+  "signal_length": 256,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 178,
+  "duration_s": 10.036665201187134,
+  "idle_power_w": 4.702850000000001,
+  "idle_power_std_w": 0.013331447783342875,
+  "mean_power_w": 27.339226130653273,
+  "power_std_w": 7.012679605569646,
+  "delta_power_w": 22.63637613065327,
+  "total_energy_j": 274.3946595329137,
+  "delta_energy_j": 227.19372859151076,
+  "energy_per_call_j": 1.2763692617500604,
+  "mean_temp_c": 45.78894472361809,
+  "max_temp_c": 46,
+  "mean_clock_mhz": 1231,
+  "time_per_call_us": 56385.75955723109,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 44.0,
+  "thermal_wait_s": 5.001820087432861,
+  "thermal_timed_out": false,
+  "params": {
+    "state_dim": 4,
+    "n_particles": 1000
+  }
+}

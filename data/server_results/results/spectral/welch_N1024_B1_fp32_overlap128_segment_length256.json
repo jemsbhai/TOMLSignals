@@ -1,0 +1,23 @@
+{
+  "algorithm": "welch",
+  "category": "spectral",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 54061,
+  "duration_s": 5.004153251647949,
+  "idle_power_w": 17.114949152542373,
+  "mean_power_w": 24.941541666666666,
+  "delta_power_w": 7.826592514124293,
+  "total_energy_j": 124.8112968323628,
+  "delta_energy_j": 39.16546837887858,
+  "energy_per_call_j": 0.0007244680708621479,
+  "mean_temp_c": 44.739583333333336,
+  "max_temp_c": 45,
+  "mean_clock_mhz": 1222,
+  "time_per_call_us": 92.56494056062502,
+  "params": {
+    "segment_length": 256,
+    "overlap": 128
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "algorithm": "dwt_db4",
+  "category": "transform",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 110327,
+  "duration_s": 5.001061677932739,
+  "idle_power_w": 10.33481666666667,
+  "mean_power_w": 15.01674,
+  "delta_power_w": 4.68192333333333,
+  "total_energy_j": 75.09964294147969,
+  "delta_energy_j": 23.414587361352428,
+  "energy_per_call_j": 0.00021222898620784059,
+  "mean_temp_c": 44.0,
+  "max_temp_c": 44,
+  "mean_clock_mhz": 566,
+  "time_per_call_us": 45.329444994722415,
+  "params": {
+    "wavelet": "db4"
+  }
+}

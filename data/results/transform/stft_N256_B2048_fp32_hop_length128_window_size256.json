@@ -1,0 +1,30 @@
+{
+  "algorithm": "stft",
+  "category": "transform",
+  "signal_length": 256,
+  "batch_size": 2048,
+  "precision": "fp32",
+  "iterations": 167489,
+  "duration_s": 10.000317811965942,
+  "idle_power_w": 4.746025,
+  "idle_power_std_w": 0.009540669525772346,
+  "mean_power_w": 86.02939195979899,
+  "power_std_w": 27.398872995696507,
+  "delta_power_w": 81.28336695979898,
+  "total_energy_j": 860.3212607681775,
+  "delta_energy_j": 812.8595024246417,
+  "energy_per_call_j": 0.004853211270140975,
+  "mean_temp_c": 54.743718592964825,
+  "max_temp_c": 57,
+  "mean_clock_mhz": 2170,
+  "time_per_call_us": 59.70731099932498,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 49.0,
+  "thermal_wait_s": 8.005574941635132,
+  "thermal_timed_out": false,
+  "params": {
+    "window_size": 256,
+    "hop_length": 128
+  }
+}

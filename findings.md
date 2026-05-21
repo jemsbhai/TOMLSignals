@@ -1,0 +1,668 @@
+# TOMLSignals — Research Findings Log
+
+**Project**: TOMLSignals (TOML Paper 4, IEEE MLSP 2026)  
+**Authors**: Muntaser Syed, Marius Silaghi, Sheikh Abujar, Sharun Akter Khushbu  
+**Policy**: This document is append-only. Entries are never deleted or rewritten. Corrections are recorded as separate errata entries referencing the original finding number.
+
+---
+
+## Finding F-001: cuFFT Implements Split-Radix, Not Cooley-Tukey
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py` (fft_tos), `data/ncu_profiles/ncu_summary.json`, `verify_fft_correction.py`
+
+### Observation
+
+The textbook Cooley-Tukey FFT operation count (N/2 · log₂(N) · 10 real FP ops) overpredicts cuFFT's actual FP32 instruction count by ~30% on both RTX 4090 and A100 GPUs.
+
+### Evidence
+
+Nsight Compute hardware profiling at N=4096, B=1:
+
+| Metric | Cooley-Tukey prediction | Split-radix prediction | NCU measured |
+|--------|------------------------|----------------------|--------------|
+| FP32 ops | 245,760 | 172,040 | 173,055 |
+| Ratio to NCU | 0.704 | **1.006** | — |
+
+The Duhamel & Vetterli (1990) split-radix formula `4N·log₂(N) − 6N + 8` matches hardware to **99.4% accuracy**.
+
+### Cascade effect
+
+Nine algorithms use FFT as a subroutine. After correction:
+
+| Algorithm | Old ratio (Cooley-Tukey) | New ratio (split-radix) |
+|-----------|------------------------|----------------------|
+| fft | 0.704 | **1.006** |
+| dct | 0.705 | **0.964** |
+| stft | 0.660 | **1.002** |
+| hilbert | 0.787 | 1.120 |
+| fir_fft | 0.648 | 0.900 |
+| matched_filter | 0.656 | 0.910 |
+| wiener | 0.851 | 1.191 |
+| periodogram | 0.837 | 1.201 |
+| welch | 0.978 | 1.432 |
+
+Pure-FFT algorithms (fft, stft, dct) converge to within 4% of hardware. Compound algorithms show 10–20% residual from non-FFT terms (torch.abs overhead, division implementation), which is implementation overhead absorbed by the α_c calibration coefficient.
+
+### Significance
+
+- First empirical validation (to our knowledge) of split-radix operation counts against GPU hardware instruction profiling.
+- The 30% Cooley-Tukey overprediction propagates through every FFT-based energy model in the literature.
+- Directly applicable to energy-aware algorithm selection in signal processing and ML.
+
+### Reference
+
+P. Duhamel and M. Vetterli, "Fast Fourier Transforms: A Tutorial Review and a State of the Art," *Signal Processing*, vol. 19, no. 4, pp. 259–299, 1990.
+
+---
+
+## Finding F-002: Complex MAC = 4 FMA on FMA Hardware
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py` (to_direct_dft), `data/ncu_profiles/ncu_summary.json`
+
+### Observation
+
+The standard complex multiply-accumulate count of 8 real ops (4 muls + 4 adds) overpredicts by 2× on FMA hardware. On GPUs with fused multiply-add units, a complex MAC requires exactly 4 FMA instructions:
+
+```
+(a+bi)(c+di) accumulated into (e+fi):
+  e += a·c   (1 FMA)
+  e -= b·d   (1 FMA)
+  f += a·d   (1 FMA)
+  f += b·c   (1 FMA)
+```
+
+### Evidence
+
+Nsight Compute at N=1024, B=1 (direct DFT = N² complex MACs):
+
+| Metric | 8-op prediction | 4-FMA prediction | NCU measured |
+|--------|----------------|-----------------|--------------|
+| FP32 ops | 8,388,608 | 4,194,304 | 4,229,120 |
+| Ratio to NCU | 0.504 | **1.008** | — |
+
+The 4-FMA formula matches hardware to **99.2% accuracy**. The 34,816 residual ops (0.8%) are reduction/accumulation operations across thread blocks.
+
+### Significance
+
+- Any energy model using the textbook "8 ops per complex MAC" will overpredict by 2× on all modern GPUs with FMA units (i.e., all GPUs since ~2010).
+- Affects: DFT, complex convolution, beamforming, MIMO processing, and any algorithm with complex-valued matrix operations.
+
+---
+
+## Finding F-003: Non-Power-of-2 FFT Sizes Incur Catastrophic Energy Penalties
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `diagnose_welch_dst.py`, `shared/to_model.py` (fft_tos, _is_pow2)
+
+### Observation
+
+FFT of size 8194 (= 2 × 17 × 241) is **4.6× more expensive** than FFT of size 16384 (= 2¹⁴) on an RTX 4090, despite being half the size. The large prime factor 241 forces cuFFT into an expensive mixed-radix or Bluestein code path.
+
+### Evidence
+
+Wall-clock timing on RTX 4090 Laptop GPU:
+
+| FFT size | Factorization | Time (µs) | Relative to FFT(4096) |
+|----------|--------------|-----------|----------------------|
+| 4096 | 2¹² | 24.8 | 1.00× |
+| 8192 | 2¹³ | 17.2 | 0.69× |
+| 8194 | 2 × 17 × 241 | 85.8 | **3.45×** |
+| 16384 | 2¹⁴ | 18.6 | 0.75× |
+
+Key ratios:
+- FFT(8194) / FFT(8192) = **4.99×** (two extra elements → 5× slower)
+- FFT(8194) / FFT(16384) = **4.62×** (half-size input → 4.6× slower)
+
+### Impact on TO model
+
+The split-radix formula `4N·log₂(N) − 6N + 8` is only valid for N = 2^m. Applying it to N=8194 produces a mathematically invalid result. Our guard pads to the next power of 2, which serves as a principled lower bound.
+
+DST-II uses antisymmetric extension of length L = 2(N+1). For N=4096, L=8194 — an accidentally terrible FFT size:
+
+| Model | DST ratio (actual/predicted) |
+|-------|-----------------------------|
+| Unguarded split-radix (invalid) | 3.84 |
+| Power-of-2 padded (lower bound) | **1.80** |
+
+### Practical implication
+
+Signal processing pipelines on GPU should always pad to power-of-2 FFT sizes. The memory cost of padding (up to 2× for worst case) is negligible compared to the 5× execution time penalty of a bad factorization.
+
+---
+
+## Finding F-004: torch.abs(X)**2 vs X.real²+X.imag² — Implementation Overhead
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `test_abs_vs_real.py`, `algorithms/spectral.py`
+
+### Observation
+
+The PyTorch expression `torch.abs(X)**2` (where X is complex) computes `sqrt(Re²+Im²)` then squares the result — mathematically equivalent to `Re²+Im²` but computationally wasteful. Nsight Compute shows **13N FP32 ops** for the abs-then-square path versus a mathematical minimum of **3N ops** (2 multiplies + 1 add per element).
+
+### Evidence
+
+NCU periodogram breakdown (N=4096), extra FP32 ops beyond FFT:
+
+| Component | Extra FMA | Extra add | Extra mul | Total extra |
+|-----------|----------|----------|----------|-------------|
+| Measured | +12,288 (3N) | +8,192 (2N) | +32,766 (~8N) | 53,246 (~13N) |
+| Mathematical minimum | — | — | — | 4N = 16,384 |
+
+Despite 3.2× more instructions, wall-clock timing shows **no difference** (65.8 µs vs 66.0 µs). The GPU is not compute-bound at this scale — the extra instructions fit within memory latency hiding.
+
+### Decision
+
+The TO model counts the mathematical minimum (3N for |X|²). The implementation overhead is absorbed by the α_c calibration coefficient. This is consistent with the project methodology: TO counts are architecture-independent mathematical operations, not library-specific instruction counts.
+
+---
+
+## Finding F-005: CNN and LSTM Denoiser TO Models Had Wrong Architecture Parameters
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py`, `algorithms/ml_enhanced.py`, `data/ncu_profiles/ncu_summary.json`
+
+### Observation
+
+The TO model for the CNN denoiser used incorrect Conv1d parameters (channels=16, mixed kernel sizes) instead of the actual implementation (channels=32, kernel_size=7 for all layers). The LSTM denoiser TO model used hidden_size=64 with 2 layers instead of hidden_size=128 with 1 layer.
+
+### Evidence
+
+**CNN Denoiser** (N=4096):
+
+| Model | Architecture | Predicted MACs | NCU FP32 | Ratio |
+|-------|-------------|---------------|----------|-------|
+| Old | Conv1d(1,16,7)+Conv1d(16,32,5)+Conv1d(32,1,3) | 11,337,728 | 31,727,232 | 2.798 |
+| Corrected | Conv1d(1,32,7)+Conv1d(32,32,7)+Conv1d(32,1,7) | 31,195,136 | 31,727,232 | **1.017** |
+
+**LSTM Denoiser** (N=1024):
+
+| Model | Architecture | Predicted FMA | NCU FMA | Ratio |
+|-------|-------------|--------------|---------|-------|
+| Old | LSTM(1,64,layers=2)+Linear(64,1) | ~51M | 68,682,752 | 1.366 |
+| Corrected | LSTM(1,128,layers=1)+Linear(128,1) | 67,633,152 | 68,682,752 | **1.016** |
+
+### Root cause
+
+TO model formulas were written from memory or an earlier architecture spec, not verified against the actual `ml_enhanced.py` implementation. A systematic cross-check of all TO model parameters against implementation code would have caught this.
+
+### Lesson
+
+Always derive TO formulas by reading the implementation source, not from architecture descriptions.
+
+---
+
+## Finding F-006: MDCT Implementation Uses Matmul, Not FFT
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py`, `algorithms/compression.py`, `data/ncu_profiles/ncu_summary.json`
+
+### Observation
+
+The TO model assumed the MDCT codec used an FFT-based transform. The actual implementation uses explicit matrix multiplication (basis @ frame) with a Python loop over frames, plus psychoacoustic masking (log, exp operations) not counted in the original model.
+
+### Evidence
+
+N=4096, frame_size=512, n_frames=7:
+
+| Model | Approach | Predicted ops | NCU FP32 | Ratio |
+|-------|---------|--------------|----------|-------|
+| Old | FFT-based, no masking | 25,104 | 3,895,808 | 155.2 |
+| Corrected | Matmul + psychoacoustic | 3,695,104 | 3,895,808 | **1.054** |
+
+The 77 NCU kernels (~11 per frame) confirm the Python-loop structure.
+
+### Significance
+
+This is the largest single correction in the TO model (155× → 1.05×). It underscores that TO formulas must be derived from the actual implementation, not from the textbook algorithm description.
+
+---
+
+## Finding F-007: Median Filter Uses Zero Floating-Point Operations
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py`, `data/ncu_profiles/ncu_summary.json`
+
+### Observation
+
+`torch.median` performs sorting entirely via integer comparison operations. Nsight Compute confirms exactly zero FP32 instructions. The previous TO model incorrectly included unfold-copy MACs (143M TOs) alongside comparison TOs.
+
+### Evidence
+
+- NCU fp32_total: **0** (zero)
+- NCU int_total: 35,324,920
+- Old TO_compute: 4,018,729 (cmp) + 143,150,000 (spurious MACs) = 147,168,729 TOs
+- New TO_compute: 4,018,729 TOs (comparison-only)
+
+### Significance
+
+Median filter is a pure-comparison algorithm on GPU. Energy models must distinguish comparison-only algorithms from arithmetic algorithms — they have fundamentally different hardware utilization patterns (integer ALU vs FP32 FMA units).
+
+---
+
+## Finding F-008: JPEG cuBLAS Overhead Amortizes with Block Count
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `profile_scaling.py`, `data/ncu_profiles/scaling/jpeg_*.csv`
+
+### Observation
+
+NCU profiling of the JPEG pipeline at four image sizes shows that cuBLAS FMA-per-block is constant at 66,368 for 4–64 blocks, then drops to 17,216 at 256 blocks. The mathematical minimum is 1,024 FMA/block (two 8×8 matmuls). The overhead ratio ranges from 64.8× (small images) to 16.8× (larger images).
+
+### Evidence
+
+| Image | Blocks | FMA/block | Overhead vs theoretical |
+|-------|--------|----------|------------------------|
+| 16×16 | 4 | 66,368 | 64.8× |
+| 32×32 | 16 | 66,368 | 64.8× |
+| 64×64 | 64 | 66,368 | 64.8× |
+| 128×128 | 256 | 17,216 | 16.8× |
+
+### Significance
+
+The overhead is from cuBLAS thread dispatch on 8×8 matrices, not from the algorithm. It amortizes at scale. The TO model should use the mathematical operation count (2 × 8³ = 1,024 FMA/block), and the implementation overhead is absorbed by α_c.
+
+---
+
+## Finding F-009: SVD Operation Count Is Implementation-Dependent and Not Capturable by a Universal Polynomial
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `profile_scaling.py`, `data/ncu_profiles/scaling/svd_*.csv`, `parse_scaling_ncu.py`
+
+### Observation
+
+NCU profiling of `torch.linalg.svd` at 9 (N, D) combinations reveals that the FP32-ops-per-ND² ratio varies from 10 to 69, depending on matrix shape. A simple `a·ND² + b·D³` formula fitted on D-varying data fails to predict N-varying data (errors up to 108%). cuSOLVER uses different internal algorithms for different matrix aspect ratios.
+
+### Evidence
+
+**Vary N (D=64 fixed):**
+
+| N | FP32 total | FP32/ND² |
+|------|-----------|----------|
+| 256 | 72,714,565 | 69.35 |
+| 512 | 67,928,965 | 32.39 |
+| 1024 | 86,405,413 | 20.60 |
+| 2048 | 108,684,522 | 12.96 |
+| 4096 | 170,023,400 | 10.13 |
+
+**Vary D (N=1024 fixed):**
+
+| D | FP32 total | FP32/ND² |
+|-----|-----------|----------|
+| 16 | 11,085,796 | 42.29 |
+| 32 | 44,033,629 | 41.99 |
+| 64 | 86,405,413 | 20.60 |
+| 128 | 416,871,524 | 24.85 |
+
+Key observation: N=256 has MORE FP32 ops than N=512 (72.7M vs 67.9M), confirming a large N-independent overhead from QR iteration and D&C decomposition.
+
+Least-squares fit `a·ND² + b·D³` gives a=20.5, b=34.3, but cross-validation errors reach 108%.
+
+### Decision
+
+Retain `6·ND²` as the theoretical lower bound (Householder bidiagonalization cost from Golub & Van Loan). Report the NCU-measured ratio (3.41× at N=1024, D=64) as “implementation overhead” in the paper. This is an honest representation: the iterative QR/D&C phase of SVD has convergence-dependent cost that no fixed formula can capture.
+
+### Significance
+
+This finding extends to PCA (which internally calls SVD on a small matrix). The 10.6× PCA gap is 74% cuSOLVER QR overhead + 51% small-matrix SVD overhead (from timing decomposition). Operation counts for factorization-heavy algorithms are inherently implementation-dependent on GPU, unlike FFT and matmul which have predictable costs.
+
+---
+
+## Finding F-010: Sequential Algorithm Energy Is Dominated by Python Dispatch, Not Computation
+
+**Date**: 2026-05-17  
+**Status**: Validated  
+**Relevant files**: `diagnose_iir_fused.py`, `algorithms/filters.py`, `shared/to_model.py`
+
+### Observation
+
+Per-step energy for sequential GPU algorithms falls into two categories separated by **three orders of magnitude**:
+
+- **Python-loop sequential** (LMS, NLMS, RLS, Kalman, etc.): median 5,902 µJ/step on RTX 4090
+- **Fused-sequential** (IIR via torchaudio.lfilter): median 5.0 µJ/step on RTX 4090
+- **Ratio: 1,190×**
+
+Both execute the same class of inherently sequential algorithm (each output depends on previous outputs). The only difference is the implementation: Python for-loop with per-step kernel launches vs. a single fused C++ kernel.
+
+### Evidence
+
+**RTX 4090 Laptop:**
+
+| Category | Median µJ/step | Mean µJ/step | Range | n |
+|----------|---------------|-------------|-------|---|
+| Fused-sequential | 5.0 | 4.6 | [3.1, 5.8] | 3 |
+| Python-loop | 5,902 | 9,144 | [1,089, 65,966] | 44 |
+
+**Cross-GPU (Python-loop only):**
+
+| GPU | Median µJ/step |
+|-----|---------------|
+| RTX 4090 Laptop | 5,902 |
+| A100 SXM4 | 840 |
+| Ratio | 7.0× |
+
+The 7× cross-GPU ratio for Python-loop overhead reflects the 4090 laptop’s slower CPU and higher Python interpreter latency vs. the A100 server.
+
+### Significance
+
+1. **The α_o coefficient in the 3-parameter model captures Python dispatch overhead, not sequential computation cost.** The 1,190× gap proves that the actual FP computation in sequential algorithms is energetically negligible compared to the per-step interpreter + kernel launch overhead.
+
+2. **Fused-sequential algorithms are a third energy regime** that neither the parallel TO model nor the sequential α_o term can capture. IIR with torchaudio is excluded from sequential step counting on the 4090 (3 data points treated as outliers).
+
+3. **Practical implication for algorithm designers:** Converting a Python-loop sequential algorithm to a fused C++/CUDA kernel reduces per-step energy by ~1,000×. This is a far larger gain than any algorithmic optimization within the loop body.
+
+### Model treatment
+
+- **4090 (torchaudio available):** IIR seq_steps = 0, treated as outlier (3 points out of 138)
+- **A100 (torchaudio unavailable):** IIR seq_steps = N, correctly classified as Python-loop sequential
+- Runtime detection via `_LOCAL_HAS_TORCHAUDIO` flag in `to_model.py`
+
+---
+
+## Finding F-011: Per-Category OLS Fit Was Overwriting Global Predictions (Bug Fix)
+
+**Date**: 2026-05-17  
+**Status**: Fixed  
+**Relevant files**: `analyze_results.py`
+
+### Bug
+
+`fit_two_parameter()` stored predictions back into `DataPoint.e_predicted` as a side effect. The per-category diagnostic fits (run after the main model fits) overwrote the global predictions with values from tiny, ill-conditioned per-category fits. The compression category (5 points, r² = -16 trillion) produced predictions of 9,959 J for JPEG — physically impossible.
+
+### Impact
+
+- JPEG per-algorithm error: 6,816,514% → **84%** after fix
+- MDCT per-algorithm error: 2,041,964% → **42%** after fix
+- Head-to-head ranking accuracy: 57% → **77%** after fix
+- Model r² and α coefficients were never affected (computed correctly, just not stored correctly)
+
+### Fix
+
+Added `store_predictions=False` parameter to `fit_two_parameter()`. Per-category diagnostic fits now pass this flag to avoid overwriting global predictions.
+
+---
+
+## Finding F-012: Head-to-Head Ranking Failures Reveal Three Model Limitations
+
+**Date**: 2026-05-17  
+**Status**: Documented  
+**Relevant files**: `analyze_results.py` (head-to-head section)
+
+### Observation
+
+After the bug fix, head-to-head ranking accuracy is 77% (23/30) on both GPUs. The 7 failures on the 4090 decompose into three root causes:
+
+### 1. Single α_o cannot distinguish dense vs sparse sequential steps (4 failures)
+
+**Kalman vs UKF (N=256,1024,4096):** Model predicts UKF 7× more expensive (1400 vs 200 steps). Measured: UKF is actually cheaper because its denser inner loop (matrix operations) amortizes kernel launch overhead better.
+
+- Kalman: 8,413 µJ/step (tiny per-step compute, mostly kernel launch)
+- UKF: 1,115 µJ/step (dense matrix ops per step)
+
+**LMS vs RLS (N=16384):** Model predicts RLS cheaper (100 vs 200 steps). Measured: RLS is more expensive because per-step work is O(M²) vs O(M).
+
+Fix would require per-algorithm α_o or a per-step compute density term — adds model complexity without clear generalization benefit.
+
+### 2. LSTM fused-sequential, same as IIR (2 failures)
+
+**CNN vs LSTM (N=4096,16384 at B=1):** cuDNN LSTM at B=1 processes one timestep at a time (inherently sequential) but is classified as parallel (seq_steps=0). Predicted 0.019J, measured 0.257J. Same regime as IIR with torchaudio (Finding F-010).
+
+### 3. Measurement noise at small N (1 failure)
+
+**Periodogram vs Welch (N=256):** Both predictions are ~0.0019J. The difference is within measurement noise at this scale.
+
+### Significance
+
+The 23% failure rate is dominated by the single-α_o limitation (4/7 failures). This is a known trade-off: a single overhead coefficient provides a simple, interpretable model but cannot capture the 8× variation in per-step overhead across algorithms.
+
+---
+
+## Finding F-013: Sequential Overhead Scales with Kernel Launches, Not Loop Iterations
+
+**Date**: 2026-05-18  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py` (KERNELS_PER_ITER, get_seq_steps), `diagnose_kernel_launches.py`, `diagnose_alpha_o.py`, `algorithms/estimation.py`
+
+### Observation
+
+The three-parameter model's sequential overhead term α_o should scale with CUDA kernel launches, not Python loop iterations. Each `torch.*` operation on a GPU tensor that produces a new tensor (not a view) triggers a kernel launch, incurring Python-to-CUDA dispatch overhead (~5-20 µs) plus GPU idle power during the dispatch gap.
+
+Different algorithms have different numbers of kernel launches per outer loop iteration (7 for LMS, 43 for UKF), making loop iterations a poor proxy.
+
+### Evidence
+
+**UKF step counting inconsistency (root cause of 3 Kalman-vs-UKF ranking failures):**
+
+The original `_seq_ukf` uniquely counted inner-loop iterations as separate steps (1,400 = 100 outer × 14 inner), while all other 11 `_seq_*` functions counted only outer iterations. This was a coding inconsistency, not a physics insight.
+
+Source code analysis of kernel launches per outer iteration:
+
+| Algorithm | Outer iters | Kernels/iter | Total launches |
+|-----------|------------|-------------|----------------|
+| LMS | 200 | 7 | 1,400 |
+| NLMS | 200 | 11 | 2,200 |
+| RLS | 100 | 12 | 1,200 |
+| APA | 100 | 15 | 1,500 |
+| Kalman | 200 | 15 | 3,000 |
+| EKF | 200 | 22 | 4,400 |
+| UKF | 100 | 43 | 4,300 |
+| Particle | 200 | 20 | 4,000 |
+| FastICA | 50 | 13 | 650 |
+| NMF | 50 | 14 | 700 |
+| MDCT | varies | 11 | varies |
+
+**Per-launch overhead consistency (RTX 4090):**
+
+| Approach | Per-alg overhead range | CV | 3-param r² |
+|----------|----------------------|-----|------------|
+| Loop iterations | 1,122–8,961 µJ (8.0×) | ~130% | 0.569 |
+| Kernel launches | 234–594 µJ (2.5×) | 34% | **0.932** |
+
+**Cross-GPU ranking accuracy:**
+
+| Approach | RTX 4090 | A100 |
+|----------|----------|------|
+| Loop iterations (old) | 23/30 = 77% | 23/30 = 77% |
+| Kernel launches (new) | 23/30 = 77% | 23/30 = 77% |
+
+Ranking accuracy is preserved while r² improves dramatically.
+
+### PCA reclassification
+
+`torch.pca_lowrank` is a C++ function (like `torch.linalg.svd`). Its internal kernel launches occur within PyTorch C++ code without Python dispatch overhead. PCA's overhead is cuSOLVER overhead, absorbed by α_c — the same regime as SVD (which always had seq_steps=0). PCA seq_steps changed from B to 0.
+
+### Irreducible Kalman-vs-UKF ranking flip
+
+The Kalman vs UKF ranking is GPU-dependent: on 4090 (laptop CPU, high per-iteration dispatch), fewer outer iterations wins → UKF cheaper. On A100 (server CPU, low per-iteration dispatch), more inner-loop launches wins → Kalman cheaper. No single α_o resolves this. With kernel launches, UKF (4,300) > Kalman (3,000), correctly predicting the A100 ranking but not the 4090 ranking (and vice versa for iteration counting).
+
+### Significance
+
+1. Kernel launches are the physically correct unit for sequential dispatch overhead — each launch is the event that incurs the overhead cost.
+2. The 3-parameter model r² on the RTX 4090 improves from 0.569 to 0.932 without adding parameters.
+3. Per-algorithm overhead consistency improves from 8× to 2.5× range.
+4. PCA correctly reclassified as parallel (C++ function, not Python dispatch).
+
+---
+
+## Finding F-014: Fused-Sequential Algorithms Require a Separate Overhead Coefficient
+
+**Date**: 2026-05-18  
+**Status**: Validated  
+**Relevant files**: `shared/to_model.py` (get_fused_steps), `analyze_results.py` (fit_four_parameter), `diagnose_fused_seq.py`
+
+### Observation
+
+cuDNN LSTM at B=1 processes N timesteps sequentially within a single fused C++/CUDA kernel. It has zero Python dispatch overhead but incurs per-timestep serial execution cost at low GPU SM utilization. This is a physically distinct energy regime from both parallel algorithms and Python-loop sequential algorithms.
+
+### Evidence
+
+**LSTM at B=1 prediction errors (3-param vs 4-param):**
+
+| GPU | N | 3-param error | 4-param error |
+|-----|------|---------------|---------------|
+| 4090 | 1024 | 93.2% | **13.3%** |
+| 4090 | 4096 | 92.5% | **3.9%** |
+| 4090 | 16384 | 92.2% | **0.3%** |
+| A100 | 1024 | 90.2% | **7.1%** |
+| A100 | 4096 | 89.8% | **1.4%** |
+| A100 | 16384 | 89.7% | **0.1%** |
+
+**Fitted coefficients:**
+
+| Coefficient | RTX 4090 | A100 | Physical meaning |
+|-------------|----------|------|------------------|
+| alpha_o | 385.4 uJ/launch | 125.2 uJ/launch | Python dispatch overhead |
+| alpha_f | 55.7 uJ/step | 45.3 uJ/step | Fused-sequential per-timestep cost |
+| alpha_o / alpha_f | 6.9x | 2.8x | Python dispatch is 3-7x more expensive |
+
+**Ranking improvement:**
+
+| GPU | 3-param | 4-param |
+|-----|---------|----------|
+| 4090 | 23/30 = 77% | **24/30 = 80%** |
+| A100 | 23/30 = 77% | **24/30 = 80%** |
+
+CNN vs LSTM denoiser at N=16384 fixed on BOTH GPUs.
+
+### Physical justification
+
+The two overhead terms capture physically distinct mechanisms:
+
+1. **alpha_o (Python-loop dispatch)**: CPU-side cost. Python interpreter executes each loop iteration, dispatching CUDA kernels through the driver. Dominated by CPU speed: 385 uJ/launch on 4090 (laptop CPU) vs 125 uJ/launch on A100 (server CPU).
+
+2. **alpha_f (fused-sequential)**: GPU-side cost. A single C++ kernel (cuDNN LSTM) processes timesteps serially. No Python interpreter or CUDA driver dispatch. The cost is serial execution time x GPU power at low SM utilization. More consistent across GPUs: 56 vs 45 uJ/step (1.2x ratio vs 3.1x for alpha_o).
+
+The alpha_f cross-GPU consistency (1.2x) vs alpha_o inconsistency (3.1x) further confirms these are different mechanisms: alpha_o scales with CPU speed, alpha_f scales with GPU characteristics.
+
+### Scope
+
+Currently only LSTM at B<=1 is classified as fused-sequential. IIR with torchaudio is also fused-sequential but has ~5000x less compute per step, so a single alpha_f cannot cover both. IIR remains as seq_steps=0 on 4090 (3 outlier data points).
+
+---
+
+## Finding F-015: CPU vs GPU Energy Comparison
+
+**Date**: 2026-05-20  
+**Status**: Validated  
+**Relevant files**: `shared/cpu_harness.py`, `cpu_algorithms.py`, `run_cpu_suite.py`, `analyze_cpu_vs_gpu.py`, `data/cpu_results/all_cpu_results.csv`, `data/cpu_vs_gpu_comparison.csv`
+
+### Summary
+
+Compared energy-per-signal between CPU (Intel i9-14900HX, RAPL via LibreHardwareMonitor) and GPU (RTX 4090 Laptop, NVML) across 129 common (algorithm, signal_length) pairs. GPU energy normalized by batch size (B=2048 for most algorithms) for per-signal comparison.
+
+### Key results
+
+| Metric | Value |
+|--------|-------|
+| Total comparisons | 129 |
+| GPU more efficient | 86 (67%) |
+| CPU more efficient | 43 (33%) |
+| Median CPU/GPU ratio | 8.8x |
+| Mean CPU/GPU ratio | 90.7x |
+| Min ratio (CPU wins most) | 0.01x (NLMS) |
+| Max ratio (GPU wins most) | 3556.6x (SavGol N=256) |
+
+### Per-category results
+
+| Category | GPU wins | CPU wins | Median ratio |
+|----------|----------|----------|--------------|
+| transform | 29 | 1 | 24.1x |
+| filter | 28 | 3 | 14.2x |
+| spectral | 11 | 1 | 74.8x |
+| ml_enhanced | 12 | 0 | 24.2x |
+| compression | 4 | 0 | 22.9x |
+| decomposition | 2 | 6 | 0.4x |
+| estimation | 0 | 16 | 0.1x |
+| adaptive | 0 | 16 | 0.0x |
+
+### Three energy regimes
+
+1. **Parallel-batched algorithms** (transforms, filters, spectral, ML, compression): GPU wins decisively. The GPU processes B=2048 signals in a single kernel launch; per-signal cost is amortized. Median 14-75x more GPU-efficient.
+
+2. **Sequential algorithms** (adaptive filters, state estimation): CPU wins 100% (32/32). The GPU's Python-loop dispatch overhead (alpha_o = 385 uJ/launch) makes sequential algorithms catastrophically expensive. NLMS is 100x more efficient on CPU.
+
+3. **Decomposition** (SVD, PCA, FastICA, NMF): Mixed. CPU wins 6/8. These algorithms involve eigendecomposition/factorization that doesn't parallelize across batch dimension on GPU. Exceptions: SVD at large N where cuSOLVER amortizes.
+
+### Crossover points
+
+- **SVD**: CPU wins at N=256 (0.59x), GPU wins at N>=1024 (2.45x). cuSOLVER kernel launch overhead amortizes at larger matrix sizes.
+- **PCA**: GPU wins at N=256 (1.78x), CPU wins at N>=1024 (0.30x). sklearn PCA is efficient for tall matrices.
+- **ESPRIT**: GPU batch size varies (B=512 at N=256, B=2 at N=1024). At low batch sizes, GPU loses its amortization advantage.
+
+### Signal length effect
+
+| N | GPU wins | CPU wins | Median ratio |
+|---|----------|----------|--------------|
+| 256 | 23 | 11 | 23.1x |
+| 1024 | 22 | 13 | 10.1x |
+| 4096 | 20 | 10 | 8.6x |
+| 16384 | 21 | 9 | 4.3x |
+
+GPU advantage decreases with N. At small N, the per-signal compute is tiny and GPU's parallel kernel launch amortizes well. At large N, CPU's per-signal compute grows but remains single-threaded, while GPU's batch-amortized advantage is diluted.
+
+### Methodology
+
+- CPU power: RAPL "CPU Package" via LibreHardwareMonitor HTTP API, ~217 Hz polling from Python
+- Protocol: thermal settle (±1°C over 5s), load settle (<10% over 3s), 10s idle baseline, 5s active measurement
+- GPU idle verified via LHM GPU Core Load = 0% during all CPU benchmarks
+- CPU batch size B=1 (natural CPU usage). GPU batch size B=2048 (or smaller for algorithms that can't batch).
+- Energy per signal: CPU = delta_P × time / iterations. GPU = energy_per_call / batch_size.
+
+### Significance
+
+This is the first systematic energy comparison across 37 signal processing algorithms on matched hardware (same laptop). The three-regime result (parallel → GPU, sequential → CPU, decomposition → mixed) provides actionable guidance for practitioners. The finding that sequential algorithms are 10-100x more CPU-efficient challenges the assumption that "GPU is always better for compute."
+
+---
+
+## Finding F-016: CPU Benchmarking Methodology Quirks and Notes
+
+**Date**: 2026-05-20  
+**Status**: Documented  
+**Relevant files**: `shared/cpu_harness.py`, `cpu_algorithms.py`, `check_gpu_sensors2.py`
+
+### 1. LHM GPU Power Sensor Returns Stale Max Value
+
+LibreHardwareMonitor's "GPU Package" power reading for the RTX 4090 Laptop GPU consistently reports 593.5 W regardless of actual GPU state. This value matches the historical max (likely from a prior CUDA workload) and never updates to reflect current draw. At 0% GPU Core Load and 210 MHz clock, actual idle power is ~1-5 W (confirmed by NVML in the GPU harness).
+
+**Workaround**: GPU idle during CPU benchmarks is verified via GPU Core Load (0.0% throughout all 147 benchmarks), not GPU power. The stuck power reading is logged but not used for any calculation.
+
+**Implication for reproducibility**: Researchers using LHM on NVIDIA laptop GPUs should validate GPU power readings against NVML or nvidia-smi before trusting them. GPU Core Load is a reliable alternative for idle verification.
+
+### 2. CPU Idle Power Variability and Noise Floor
+
+CPU Package idle power (RAPL via LHM) ranged from 11-20 W across the 147 benchmarks, with per-measurement standard deviation of 0.5-5 W. This is significantly noisier than GPU NVML measurements (sub-watt precision at idle).
+
+Sources of variability:
+- Background OS processes (Windows services, indexing, telemetry)
+- P-core vs E-core scheduling shifts at idle
+- Thermal-dependent leakage current (idle power correlates with die temperature)
+
+Active power (delta above idle) ranged from 10-59 W depending on algorithm. For lightweight algorithms at small N (e.g., FFT N=256 at delta_P=13.5 W), the idle variability (up to 5 W) represents ~37% relative noise. For compute-heavy algorithms (e.g., Transformer N=4096 at delta_P=72 W), noise is <7%.
+
+**Mitigation**: Thermal settling (±1°C/5s) and load settling (<10%/3s) before each measurement reduces but does not eliminate this variability. The 10-second idle baseline provides a per-measurement reference that captures the current background state.
+
+**Implication**: CPU energy-per-call values for lightweight algorithms at small N should be interpreted as order-of-magnitude estimates, not precise measurements. The GPU-vs-CPU comparison conclusions (F-015) are robust because the category-level patterns (GPU wins parallel by 10-100x, CPU wins sequential by 10-100x) far exceed the measurement noise.
+
+### 3. MDCT at N=256 Physically Impossible
+
+MDCT audio codec uses frame_size=512, requiring a minimum signal length of 2×512=1024 samples. At N=256, the frame slice exceeds the signal length. Both CPU and GPU benchmarks skip this configuration (GPU has MDCT only at N>=4096, CPU run produced 147/148 results with MDCT N=256 as the sole failure). This is expected and consistent across platforms.
+
+### 4. CPU UKF Required Parameter Matching for Apples-to-Apples Comparison
+
+The textbook UKF uses alpha=1e-3, which produces w_c0 ≈ -1e6 in float32 — a large negative weight that destroys covariance matrix positive-definiteness. The GPU implementation (estimation.py) uses alpha=1.0 (equivalent to the cubature Kalman filter, Arasaratnam & Haykin 2009) and stabilizes the state transition matrix F by scaling its spectral radius to 0.95.
+
+The CPU implementation was matched to these parameters (alpha=1.0, spectral radius scaling) for fair comparison. The initial CPU implementation with alpha=0.5 failed Cholesky decomposition; matching the GPU's alpha=1.0 resolved this.
+
+**Implication for the paper**: The UKF implementation is technically a cubature Kalman filter (CKF). This should be noted when describing the algorithm. The energy comparison remains valid because both CPU and GPU execute identical mathematical operations.
+
+---

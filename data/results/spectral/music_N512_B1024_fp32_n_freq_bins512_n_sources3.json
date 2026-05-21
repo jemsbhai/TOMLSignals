@@ -1,0 +1,30 @@
+{
+  "algorithm": "music",
+  "category": "spectral",
+  "signal_length": 512,
+  "batch_size": 1024,
+  "precision": "fp32",
+  "iterations": 11197,
+  "duration_s": 10.000626802444458,
+  "idle_power_w": 4.839125,
+  "idle_power_std_w": 0.010349365922606012,
+  "mean_power_w": 117.33079899497487,
+  "power_std_w": 38.97957259215569,
+  "delta_power_w": 112.49167399497487,
+  "total_energy_j": 1173.381533181369,
+  "delta_energy_j": 1124.98725000599,
+  "energy_per_call_j": 0.1004722023761713,
+  "mean_temp_c": 58.984924623115575,
+  "max_temp_c": 62,
+  "mean_clock_mhz": 2176,
+  "time_per_call_us": 893.152344596272,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 48.0,
+  "thermal_wait_s": 5.004914045333862,
+  "thermal_timed_out": false,
+  "params": {
+    "n_sources": 3,
+    "n_freq_bins": 512
+  }
+}

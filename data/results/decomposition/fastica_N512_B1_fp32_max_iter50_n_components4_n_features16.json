@@ -1,0 +1,31 @@
+{
+  "algorithm": "fastica",
+  "category": "decomposition",
+  "signal_length": 512,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 623,
+  "duration_s": 10.007342338562012,
+  "idle_power_w": 4.7287,
+  "idle_power_std_w": 0.01563361762356994,
+  "mean_power_w": 29.231570707070706,
+  "power_std_w": 8.308068316040162,
+  "delta_power_w": 24.502870707070706,
+  "total_energy_j": 292.53033515953774,
+  "delta_energy_j": 245.20861544317958,
+  "energy_per_call_j": 0.3935932832153765,
+  "mean_temp_c": 47.696969696969695,
+  "max_temp_c": 49,
+  "mean_clock_mhz": 1405,
+  "time_per_call_us": 16063.149821126824,
+  "power_samples": 198,
+  "idle_samples": 40,
+  "idle_temp_c": 47.0,
+  "thermal_wait_s": 5.002623081207275,
+  "thermal_timed_out": false,
+  "params": {
+    "n_features": 16,
+    "n_components": 4,
+    "max_iter": 50
+  }
+}

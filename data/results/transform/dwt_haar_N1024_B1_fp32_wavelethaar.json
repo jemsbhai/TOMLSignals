@@ -1,0 +1,22 @@
+{
+  "algorithm": "dwt_haar",
+  "category": "transform",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 120855,
+  "duration_s": 5.000989198684692,
+  "idle_power_w": 9.926183333333332,
+  "mean_power_w": 15.900689999999999,
+  "delta_power_w": 5.974506666666667,
+  "total_energy_j": 79.5191789416337,
+  "delta_energy_j": 29.878443307469684,
+  "energy_per_call_j": 0.0002472255455502022,
+  "mean_temp_c": 43.25,
+  "max_temp_c": 44,
+  "mean_clock_mhz": 660,
+  "time_per_call_us": 41.38007694083565,
+  "params": {
+    "wavelet": "haar"
+  }
+}

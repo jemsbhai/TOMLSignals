@@ -1,0 +1,29 @@
+{
+  "algorithm": "ekf",
+  "category": "estimation",
+  "signal_length": 4096,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 78,
+  "duration_s": 10.094979524612427,
+  "idle_power_w": 4.616125,
+  "idle_power_std_w": 0.009211914838946305,
+  "mean_power_w": 18.45507960199005,
+  "power_std_w": 4.550026607940553,
+  "delta_power_w": 13.83895460199005,
+  "total_energy_j": 186.30365070718202,
+  "delta_energy_j": 139.70396334913048,
+  "energy_per_call_j": 1.7910764531939805,
+  "mean_temp_c": 44.482587064676615,
+  "max_temp_c": 45,
+  "mean_clock_mhz": 890,
+  "time_per_call_us": 129422.81441810804,
+  "power_samples": 201,
+  "idle_samples": 40,
+  "idle_temp_c": 44.0,
+  "thermal_wait_s": 5.003112077713013,
+  "thermal_timed_out": false,
+  "params": {
+    "state_dim": 4
+  }
+}

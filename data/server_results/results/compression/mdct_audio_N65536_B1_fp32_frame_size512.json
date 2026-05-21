@@ -1,0 +1,30 @@
+{
+  "algorithm": "mdct_audio",
+  "category": "compression",
+  "signal_length": 65536,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 1431,
+  "duration_s": 10.001418352127075,
+  "idle_power_w": 75.400825,
+  "idle_power_std_w": 0.10897107127581893,
+  "mean_power_w": 78.21755999999999,
+  "power_std_w": 0.35203445342750234,
+  "delta_power_w": 2.816734999999994,
+  "total_energy_j": 782.2865400426006,
+  "delta_energy_j": 28.1713451220786,
+  "energy_per_call_j": 0.019686474578671277,
+  "mean_temp_c": 35.0,
+  "max_temp_c": 35,
+  "mean_clock_mhz": 1095,
+  "time_per_call_us": 6989.111357181743,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 35.0,
+  "thermal_wait_s": 5.00558614730835,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "frame_size": 512
+  }
+}

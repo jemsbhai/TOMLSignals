@@ -1,0 +1,62 @@
+{
+  "NVIDIA GeForce RTX 4090 Laptop GPU": {
+    "model_A_2param_all": {
+      "alpha_c": 1.3639370491755268e-14,
+      "alpha_m": 7.198127899851845e-14,
+      "r_squared": 0.2030864115246105,
+      "mean_rel_error": 75.32738080338264,
+      "n_points": 138
+    },
+    "model_D_1param": {
+      "alpha": 1.369640117125074e-14,
+      "r_squared": 0.2026419180505492,
+      "mean_rel_error": 80.99345082006903
+    },
+    "model_B_3param_all": {
+      "alpha_c": 1.3637509240595208e-14,
+      "alpha_m": 7.125790859984239e-14,
+      "alpha_o": 0.000385402997719265,
+      "alpha_o_uJ_per_step": 385.402997719265,
+      "r_squared": 0.932008754818326,
+      "mean_rel_error": 55.24103820970585,
+      "n_points": 138
+    },
+    "model_C_2param_parallel": {
+      "alpha_c": 1.3605475460801611e-14,
+      "alpha_m": 7.18203664550375e-14,
+      "r_squared": 0.9656775298382246,
+      "mean_rel_error": 64.0935206837436,
+      "n_points": 94
+    }
+  },
+  "NVIDIA A100-SXM4-40GB": {
+    "model_A_2param_all": {
+      "alpha_c": 1.522615666771795e-14,
+      "alpha_m": 1.8464520502310007e-13,
+      "r_squared": 0.196242771169588,
+      "mean_rel_error": 70.33180887140252,
+      "n_points": 126
+    },
+    "model_D_1param": {
+      "alpha": 1.5379391529103722e-14,
+      "r_squared": 0.194733425226429,
+      "mean_rel_error": 73.50312967124454
+    },
+    "model_B_3param_all": {
+      "alpha_c": 1.522585363884857e-14,
+      "alpha_m": 1.839536878665361e-13,
+      "alpha_o": 0.00012522350472132598,
+      "alpha_o_uJ_per_step": 125.22350472132598,
+      "r_squared": 0.9783174223922222,
+      "mean_rel_error": 95.57924632951162,
+      "n_points": 126
+    },
+    "model_C_2param_parallel": {
+      "alpha_c": 1.5199211338571342e-14,
+      "alpha_m": 1.8445058734337842e-13,
+      "r_squared": 0.9765008193083721,
+      "mean_rel_error": 53.5401742186332,
+      "n_points": 79
+    }
+  }
+}

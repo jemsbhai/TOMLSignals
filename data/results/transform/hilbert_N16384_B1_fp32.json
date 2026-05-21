@@ -1,0 +1,20 @@
+{
+  "algorithm": "hilbert",
+  "category": "transform",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 91875,
+  "duration_s": 5.009323358535767,
+  "idle_power_w": 24.898233333333334,
+  "mean_power_w": 38.932559999999995,
+  "delta_power_w": 14.034326666666662,
+  "total_energy_j": 195.02578221559523,
+  "delta_energy_j": 70.30248039265472,
+  "energy_per_call_j": 0.0007651970654982826,
+  "mean_temp_c": 47.27,
+  "max_temp_c": 48,
+  "mean_clock_mhz": 2105,
+  "time_per_call_us": 54.52324743984507,
+  "params": {}
+}

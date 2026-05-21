@@ -1,0 +1,22 @@
+{
+  "algorithm": "fir_direct",
+  "category": "filter",
+  "signal_length": 256,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 227060,
+  "duration_s": 5.000908613204956,
+  "idle_power_w": 33.71906666666667,
+  "mean_power_w": 22.2229494949495,
+  "delta_power_w": -11.49611717171717,
+  "total_energy_j": 111.13493954011169,
+  "delta_energy_j": -57.4910313824538,
+  "energy_per_call_j": -0.0002531975309717863,
+  "mean_temp_c": 46.323232323232325,
+  "max_temp_c": 47,
+  "mean_clock_mhz": 1144,
+  "time_per_call_us": 22.024612935809724,
+  "params": {
+    "filter_length": 64
+  }
+}

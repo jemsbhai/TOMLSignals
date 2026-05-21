@@ -1,0 +1,23 @@
+{
+  "algorithm": "savgol",
+  "category": "filter",
+  "signal_length": 4096,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 242577,
+  "duration_s": 5.000586271286011,
+  "idle_power_w": 10.089566666666672,
+  "mean_power_w": 15.929350000000005,
+  "delta_power_w": 5.839783333333333,
+  "total_energy_j": 79.65608892050984,
+  "delta_energy_j": 29.202340363951524,
+  "energy_per_call_j": 0.0001203837971611139,
+  "mean_temp_c": 43.78,
+  "max_temp_c": 44,
+  "mean_clock_mhz": 763,
+  "time_per_call_us": 20.61442870216884,
+  "params": {
+    "window_size": 7,
+    "poly_order": 3
+  }
+}

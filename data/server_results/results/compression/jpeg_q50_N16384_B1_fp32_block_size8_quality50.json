@@ -1,0 +1,23 @@
+{
+  "algorithm": "jpeg_q50",
+  "category": "compression",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 36580,
+  "duration_s": 5.007484674453735,
+  "idle_power_w": 15.440683333333334,
+  "mean_power_w": 18.26367,
+  "delta_power_w": 2.822986666666667,
+  "total_energy_j": 91.45504762428045,
+  "delta_energy_j": 14.13606246952057,
+  "energy_per_call_j": 0.00038644238571680075,
+  "mean_temp_c": 43.33,
+  "max_temp_c": 44,
+  "mean_clock_mhz": 876,
+  "time_per_call_us": 136.8913251627593,
+  "params": {
+    "quality": 50,
+    "block_size": 8
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "algorithm": "periodogram",
+  "category": "spectral",
+  "signal_length": 256,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 66712,
+  "duration_s": 5.003678560256958,
+  "idle_power_w": 18.91847457627119,
+  "mean_power_w": 24.748138297872345,
+  "delta_power_w": 5.829663721601154,
+  "total_energy_j": 123.83172900733797,
+  "delta_energy_j": 29.16976337728348,
+  "energy_per_call_j": 0.0004372491212567976,
+  "mean_temp_c": 45.840425531914896,
+  "max_temp_c": 46,
+  "mean_clock_mhz": 1242,
+  "time_per_call_us": 75.00417556447053,
+  "params": {}
+}

@@ -1,0 +1,29 @@
+{
+  "algorithm": "wiener",
+  "category": "filter",
+  "signal_length": 4096,
+  "batch_size": 2048,
+  "precision": "fp32",
+  "iterations": 5377,
+  "duration_s": 10.007745265960693,
+  "idle_power_w": 5.007149999999998,
+  "idle_power_std_w": 0.05523655945114632,
+  "mean_power_w": 126.62709045226133,
+  "power_std_w": 44.564676796897324,
+  "delta_power_w": 121.61994045226133,
+  "total_energy_j": 1267.2516650159948,
+  "delta_energy_j": 1217.1413833075399,
+  "energy_per_call_j": 0.22636068129208478,
+  "mean_temp_c": 57.68341708542714,
+  "max_temp_c": 60,
+  "mean_clock_mhz": 2153,
+  "time_per_call_us": 1861.2135514154163,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 51.0,
+  "thermal_wait_s": 9.008249044418335,
+  "thermal_timed_out": false,
+  "params": {
+    "noise_power": 0.01
+  }
+}

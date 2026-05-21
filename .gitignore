@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp diagnostic scripts (one-off checks)
+check_esprit.py
+check_gpu_sensors.py
+check_gpu_sensors2.py
+check_outliers.py
+test_cpu_smoke.py
+
+# Large NCU raw CSVs (keep parsed summaries)
+data/ncu_profiles/scaling/*.csv
+!data/ncu_profiles/scaling/*.json
+
+# Lambda deployment artifacts
+*.pem

@@ -1,0 +1,29 @@
+{
+  "algorithm": "iir_butter4",
+  "category": "filter",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 4573,
+  "duration_s": 10.009572505950928,
+  "idle_power_w": 4.79555,
+  "idle_power_std_w": 0.05839432763548189,
+  "mean_power_w": 41.91359296482413,
+  "power_std_w": 13.529597442827914,
+  "delta_power_w": 37.118042964824134,
+  "total_energy_j": 419.5371477663219,
+  "delta_energy_j": 371.53574233540894,
+  "energy_per_call_j": 0.08124551548992104,
+  "mean_temp_c": 49.231155778894475,
+  "max_temp_c": 51,
+  "mean_clock_mhz": 2185,
+  "time_per_call_us": 2188.841571386601,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 47.0,
+  "thermal_wait_s": 5.00469183921814,
+  "thermal_timed_out": false,
+  "params": {
+    "order": 4
+  }
+}

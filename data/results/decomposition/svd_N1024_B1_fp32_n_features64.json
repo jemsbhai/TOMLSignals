@@ -1,0 +1,29 @@
+{
+  "algorithm": "svd",
+  "category": "decomposition",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 6179,
+  "duration_s": 10.001058578491211,
+  "idle_power_w": 4.770125000000001,
+  "idle_power_std_w": 0.007606535019310598,
+  "mean_power_w": 44.545477386934685,
+  "power_std_w": 14.068460141465422,
+  "delta_power_w": 39.775352386934685,
+  "total_energy_j": 445.50192875358937,
+  "delta_energy_j": 397.795629201864,
+  "energy_per_call_j": 0.06437864204594013,
+  "mean_temp_c": 49.62814070351759,
+  "max_temp_c": 51,
+  "mean_clock_mhz": 2164,
+  "time_per_call_us": 1618.5561706572603,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 47.0,
+  "thermal_wait_s": 7.004305601119995,
+  "thermal_timed_out": false,
+  "params": {
+    "n_features": 64
+  }
+}

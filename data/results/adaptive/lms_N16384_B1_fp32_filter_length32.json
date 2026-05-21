@@ -1,0 +1,29 @@
+{
+  "algorithm": "lms",
+  "category": "adaptive",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 518,
+  "duration_s": 10.020262241363525,
+  "idle_power_w": 4.592099999999999,
+  "idle_power_std_w": 0.03995610091087461,
+  "mean_power_w": 21.53605025125628,
+  "power_std_w": 6.354112306491362,
+  "delta_power_w": 16.943950251256283,
+  "total_energy_j": 215.79687116077076,
+  "delta_energy_j": 169.78282492220535,
+  "energy_per_call_j": 0.3277660712783887,
+  "mean_temp_c": 46.57788944723618,
+  "max_temp_c": 47,
+  "mean_clock_mhz": 1077,
+  "time_per_call_us": 19344.135601087884,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 46.0,
+  "thermal_wait_s": 5.006730079650879,
+  "thermal_timed_out": false,
+  "params": {
+    "filter_length": 32
+  }
+}

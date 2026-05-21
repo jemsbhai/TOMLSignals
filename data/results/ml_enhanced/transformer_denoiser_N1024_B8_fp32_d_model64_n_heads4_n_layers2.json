@@ -1,0 +1,31 @@
+{
+  "algorithm": "transformer_denoiser",
+  "category": "ml_enhanced",
+  "signal_length": 1024,
+  "batch_size": 8,
+  "precision": "fp32",
+  "iterations": 5246,
+  "duration_s": 10.008430004119873,
+  "idle_power_w": 4.691375,
+  "idle_power_std_w": 0.012529340565249257,
+  "mean_power_w": 118.92625125628139,
+  "power_std_w": 39.51712889441075,
+  "delta_power_w": 114.2348762562814,
+  "total_energy_j": 1190.2650613508654,
+  "delta_energy_j": 1143.3117630402876,
+  "energy_per_call_j": 0.2179397184598337,
+  "mean_temp_c": 59.321608040201006,
+  "max_temp_c": 62,
+  "mean_clock_mhz": 2228,
+  "time_per_call_us": 1907.8211978878903,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 48.0,
+  "thermal_wait_s": 9.00877046585083,
+  "thermal_timed_out": false,
+  "params": {
+    "d_model": 64,
+    "n_heads": 4,
+    "n_layers": 2
+  }
+}

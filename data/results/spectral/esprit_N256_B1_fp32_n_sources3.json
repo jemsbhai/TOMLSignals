@@ -1,0 +1,22 @@
+{
+  "algorithm": "esprit",
+  "category": "spectral",
+  "signal_length": 256,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 7301,
+  "duration_s": 5.000836610794067,
+  "idle_power_w": 18.54930000000001,
+  "mean_power_w": 27.21895,
+  "delta_power_w": 8.66964999999999,
+  "total_energy_j": 136.11752166737318,
+  "delta_energy_j": 43.355503122770735,
+  "energy_per_call_j": 0.005938296551536876,
+  "mean_temp_c": 44.02,
+  "max_temp_c": 45,
+  "mean_clock_mhz": 1513,
+  "time_per_call_us": 684.9522819879561,
+  "params": {
+    "n_sources": 3
+  }
+}

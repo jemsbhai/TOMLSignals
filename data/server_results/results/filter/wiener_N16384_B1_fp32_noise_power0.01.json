@@ -1,0 +1,22 @@
+{
+  "algorithm": "wiener",
+  "category": "filter",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 44785,
+  "duration_s": 5.00921106338501,
+  "idle_power_w": 19.580542372881354,
+  "mean_power_w": 38.10906000000001,
+  "delta_power_w": 18.528517627118653,
+  "total_energy_j": 190.89632496720318,
+  "delta_energy_j": 92.81325548588693,
+  "energy_per_call_j": 0.002072418342880137,
+  "mean_temp_c": 46.1,
+  "max_temp_c": 47,
+  "mean_clock_mhz": 2086,
+  "time_per_call_us": 111.85019679323456,
+  "params": {
+    "noise_power": 0.01
+  }
+}

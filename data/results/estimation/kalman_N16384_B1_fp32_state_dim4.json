@@ -1,0 +1,29 @@
+{
+  "algorithm": "kalman",
+  "category": "estimation",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 91,
+  "duration_s": 10.046335935592651,
+  "idle_power_w": 4.575,
+  "idle_power_std_w": 0.003872983346207248,
+  "mean_power_w": 18.03462,
+  "power_std_w": 4.614889544246969,
+  "delta_power_w": 13.459620000000001,
+  "total_energy_j": 181.18185099075794,
+  "delta_energy_j": 135.21986408542156,
+  "energy_per_call_j": 1.4859325723672698,
+  "mean_temp_c": 43.925,
+  "max_temp_c": 44,
+  "mean_clock_mhz": 817,
+  "time_per_call_us": 110399.29599552364,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 43.0,
+  "thermal_wait_s": 5.002317190170288,
+  "thermal_timed_out": false,
+  "params": {
+    "state_dim": 4
+  }
+}

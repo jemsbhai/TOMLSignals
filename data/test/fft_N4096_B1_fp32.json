@@ -1,0 +1,20 @@
+{
+  "algorithm": "fft",
+  "category": "transform",
+  "signal_length": 4096,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 170913,
+  "duration_s": 5.000041961669922,
+  "idle_power_w": 27.696847457627115,
+  "mean_power_w": 32.10668131868132,
+  "delta_power_w": 4.409833861054203,
+  "total_energy_j": 160.53475384337037,
+  "delta_energy_j": 22.049354349263904,
+  "energy_per_call_j": 0.00012900922896013706,
+  "mean_temp_c": 42.21978021978022,
+  "max_temp_c": 43,
+  "mean_clock_mhz": 1645,
+  "time_per_call_us": 29.25489554141535,
+  "params": {}
+}

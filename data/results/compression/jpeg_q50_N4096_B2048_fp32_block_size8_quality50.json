@@ -1,0 +1,30 @@
+{
+  "algorithm": "jpeg_q50",
+  "category": "compression",
+  "signal_length": 4096,
+  "batch_size": 2048,
+  "precision": "fp32",
+  "iterations": 9611,
+  "duration_s": 10.000309944152832,
+  "idle_power_w": 4.9510000000000005,
+  "idle_power_std_w": 0.07458552138317477,
+  "mean_power_w": 145.36026130653266,
+  "power_std_w": 49.96128983766609,
+  "delta_power_w": 140.40926130653267,
+  "total_energy_j": 1453.6476666283727,
+  "delta_energy_j": 1404.1361320948722,
+  "energy_per_call_j": 0.14609677786857478,
+  "mean_temp_c": 61.57788944723618,
+  "max_temp_c": 65,
+  "mean_clock_mhz": 2176,
+  "time_per_call_us": 1040.5067052494883,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 48.0,
+  "thermal_wait_s": 5.003192663192749,
+  "thermal_timed_out": false,
+  "params": {
+    "quality": 50,
+    "block_size": 8
+  }
+}

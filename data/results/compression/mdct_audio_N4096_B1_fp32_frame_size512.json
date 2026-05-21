@@ -1,0 +1,29 @@
+{
+  "algorithm": "mdct_audio",
+  "category": "compression",
+  "signal_length": 4096,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 8049,
+  "duration_s": 10.001290798187256,
+  "idle_power_w": 5.19275,
+  "idle_power_std_w": 0.010485108487755336,
+  "mean_power_w": 20.99475879396985,
+  "power_std_w": 5.6099668136596295,
+  "delta_power_w": 15.80200879396985,
+  "total_energy_j": 209.97468793629164,
+  "delta_energy_j": 158.04048514400478,
+  "energy_per_call_j": 0.01963479750826249,
+  "mean_temp_c": 52.050251256281406,
+  "max_temp_c": 53,
+  "mean_clock_mhz": 883,
+  "time_per_call_us": 1242.5507265731464,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 53.0,
+  "thermal_wait_s": 9.00505805015564,
+  "thermal_timed_out": false,
+  "params": {
+    "frame_size": 512
+  }
+}

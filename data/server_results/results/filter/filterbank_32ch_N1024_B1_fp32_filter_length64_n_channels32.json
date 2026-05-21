@@ -1,0 +1,23 @@
+{
+  "algorithm": "filterbank_32ch",
+  "category": "filter",
+  "signal_length": 1024,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 238478,
+  "duration_s": 5.000020265579224,
+  "idle_power_w": 20.276457627118646,
+  "mean_power_w": 27.994179999999993,
+  "delta_power_w": 7.717722372881347,
+  "total_energy_j": 139.97146731827254,
+  "delta_energy_j": 38.58876826852091,
+  "energy_per_call_j": 0.0001618126966366747,
+  "mean_temp_c": 45.83,
+  "max_temp_c": 46,
+  "mean_clock_mhz": 1413,
+  "time_per_call_us": 20.96637956364622,
+  "params": {
+    "n_channels": 32,
+    "filter_length": 64
+  }
+}

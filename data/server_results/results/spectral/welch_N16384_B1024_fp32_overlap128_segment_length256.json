@@ -1,0 +1,31 @@
+{
+  "algorithm": "welch",
+  "category": "spectral",
+  "signal_length": 16384,
+  "batch_size": 1024,
+  "precision": "fp32",
+  "iterations": 6034,
+  "duration_s": 10.00085163116455,
+  "idle_power_w": 76.83445,
+  "idle_power_std_w": 0.12620755722222238,
+  "mean_power_w": 302.26739999999995,
+  "power_std_w": 26.136588913628337,
+  "delta_power_w": 225.43294999999995,
+  "total_energy_j": 3022.931420337867,
+  "delta_energy_j": 2254.521485725736,
+  "energy_per_call_j": 0.3736363085392337,
+  "mean_temp_c": 50.92,
+  "max_temp_c": 53,
+  "mean_clock_mhz": 1400,
+  "time_per_call_us": 1657.4165779192163,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 40.0,
+  "thermal_wait_s": 7.007704973220825,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "segment_length": 256,
+    "overlap": 128
+  }
+}

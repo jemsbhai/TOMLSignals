@@ -1,0 +1,32 @@
+{
+  "algorithm": "transformer_denoiser",
+  "category": "ml_enhanced",
+  "signal_length": 16384,
+  "batch_size": 1,
+  "precision": "fp32",
+  "iterations": 430,
+  "duration_s": 10.013953447341919,
+  "idle_power_w": 76.71645000000001,
+  "idle_power_std_w": 0.1614176183072976,
+  "mean_power_w": 343.2724099999999,
+  "power_std_w": 36.39958029623281,
+  "delta_power_w": 266.5559599999999,
+  "total_energy_j": 3437.513933496868,
+  "delta_energy_j": 2669.278974551534,
+  "energy_per_call_j": 6.20762552221287,
+  "mean_temp_c": 56.89,
+  "max_temp_c": 60,
+  "mean_clock_mhz": 1400,
+  "time_per_call_us": 23288.263831027718,
+  "power_samples": 200,
+  "idle_samples": 40,
+  "idle_temp_c": 40.0,
+  "thermal_wait_s": 7.007985830307007,
+  "thermal_timed_out": false,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "params": {
+    "d_model": 64,
+    "n_heads": 4,
+    "n_layers": 2
+  }
+}

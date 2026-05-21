@@ -1,0 +1,29 @@
+{
+  "algorithm": "median",
+  "category": "filter",
+  "signal_length": 1024,
+  "batch_size": 1024,
+  "precision": "fp32",
+  "iterations": 5964,
+  "duration_s": 10.001462459564209,
+  "idle_power_w": 4.8378,
+  "idle_power_std_w": 0.020206682063119645,
+  "mean_power_w": 132.4095376884422,
+  "power_std_w": 46.25561011089348,
+  "delta_power_w": 127.57173768844221,
+  "total_energy_j": 1324.289020479207,
+  "delta_energy_j": 1275.9039453923274,
+  "energy_per_call_j": 0.21393426314425343,
+  "mean_temp_c": 62.231155778894475,
+  "max_temp_c": 66,
+  "mean_clock_mhz": 2196,
+  "time_per_call_us": 1676.9722433876943,
+  "power_samples": 199,
+  "idle_samples": 40,
+  "idle_temp_c": 49.0,
+  "thermal_wait_s": 7.00438117980957,
+  "thermal_timed_out": false,
+  "params": {
+    "window_size": 7
+  }
+}
