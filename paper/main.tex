@@ -168,7 +168,7 @@ Each algorithm is benchmarked at four signal lengths ($N = 256$, $1024$, $4096$,
 
 \subsection{Nsight Compute Validation}
 
-To validate the TO operation counts against actual hardware instruction throughput, we profile 23 of the 37 algorithms using NVIDIA Nsight Compute~\cite{NsightCompute} at $B = 1$ on the RTX 4090. The profiler reports per-kernel FP32 and FMA instruction counts, which we aggregate across all kernels in a single algorithm invocation and compare against the TO model's predicted operation counts. This provides a ground-truth check independent of the energy model's fitted $\alpha$ coefficients.
+To validate the TO operation counts against actual hardware instruction throughput, we profile 23 of the 37 algorithms using NVIDIA Nsight Compute~\cite{NsightCompute} at $B = 1$ on the RTX 4090. The profiler reports per-kernel FP32 and FMA instruction counts, which we aggregate across all kernels in a single algorithm invocation and compare against the TO model's predicted operation counts. This provides a ground-truth check independent of the energy model's fitted $\alpha$ coefficients. Code and data are available at \url{https://anonymous.4open.science/r/TOMLSignals-8810/}.
 
 % =========================================================================
 \section{Results}
