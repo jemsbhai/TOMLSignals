@@ -1,0 +1,1987 @@
+{
+  "created_utc": "2026-08-17T19:58:45+00:00",
+  "ncu": "C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2024.1.0\\ncu.bat",
+  "v0_entries": [
+    {
+      "algorithm": "fft",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 2,
+      "fp32_fma": 44032.0,
+      "fp32_add": 87295.0,
+      "fp32_mul": 41728.0,
+      "fp32_total": 173055.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 273538.0,
+      "dram_bytes": 99072.0,
+      "dram_kb": 96.75,
+      "dram_words": 24768.0,
+      "to_pred_macs": 245760.0,
+      "to_pred_mem_words": 12288.0,
+      "ratio_fp_actual_vs_predicted": 0.70416259765625,
+      "ratio_mem_actual_vs_predicted": 2.015625,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "direct_dft",
+      "N": 1024,
+      "B": 1,
+      "n_kernels": 1,
+      "fp32_fma": 4198400.0,
+      "fp32_add": 30720.0,
+      "fp32_mul": 0.0,
+      "fp32_total": 4229120.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 3347456.0,
+      "dram_bytes": 8410368.0,
+      "dram_kb": 8213.25,
+      "dram_words": 2102592.0,
+      "to_pred_macs": 8388608.0,
+      "to_pred_mem_words": 2099200.0,
+      "ratio_fp_actual_vs_predicted": 0.504150390625,
+      "ratio_mem_actual_vs_predicted": 1.0016158536585367,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "dct",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 6,
+      "fp32_fma": 52224.0,
+      "fp32_add": 87295.0,
+      "fp32_mul": 54016.0,
+      "fp32_total": 193535.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 1171074.0,
+      "dram_bytes": 277376.0,
+      "dram_kb": 270.875,
+      "dram_words": 69344.0,
+      "to_pred_macs": 274432.0,
+      "to_pred_mem_words": 12288.0,
+      "ratio_fp_actual_vs_predicted": 0.7052202367070896,
+      "ratio_mem_actual_vs_predicted": 5.643229166666667,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "dst",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 12,
+      "fp32_fma": 672723.0,
+      "fp32_add": 435460.0,
+      "fp32_mul": 386524.0,
+      "fp32_total": 1494707.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 1993730.0,
+      "dram_bytes": 856832.0,
+      "dram_kb": 836.75,
+      "dram_words": 214208.0,
+      "to_pred_macs": 544912.4287113679,
+      "to_pred_mem_words": 16386.0,
+      "ratio_fp_actual_vs_predicted": 2.743022403681903,
+      "ratio_mem_actual_vs_predicted": 13.072622970828757,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "dwt_haar",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 2,
+      "fp32_fma": 8192.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 4098.0,
+      "fp32_total": 12290.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 395424.0,
+      "dram_bytes": 57856.0,
+      "dram_kb": 56.5,
+      "dram_words": 14464.0,
+      "to_pred_macs": 8192.0,
+      "to_pred_mem_words": 8192.0,
+      "ratio_fp_actual_vs_predicted": 1.500244140625,
+      "ratio_mem_actual_vs_predicted": 1.765625,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "stft",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 3,
+      "fp32_fma": 50688.0,
+      "fp32_add": 108240.0,
+      "fp32_mul": 55968.0,
+      "fp32_total": 214896.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 411136.0,
+      "dram_bytes": 95104.0,
+      "dram_kb": 92.875,
+      "dram_words": 23776.0,
+      "to_pred_macs": 325376.0,
+      "to_pred_mem_words": 12094.0,
+      "ratio_fp_actual_vs_predicted": 0.6604543666404405,
+      "ratio_mem_actual_vs_predicted": 1.965933520754093,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "hilbert",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 5,
+      "fp32_fma": 104448.0,
+      "fp32_add": 185599.0,
+      "fp32_mul": 99840.0,
+      "fp32_total": 389887.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 458882.0,
+      "dram_bytes": 299264.0,
+      "dram_kb": 292.25,
+      "dram_words": 74816.0,
+      "to_pred_macs": 495616.0,
+      "to_pred_mem_words": 12288.0,
+      "ratio_fp_actual_vs_predicted": 0.7866715360278925,
+      "ratio_mem_actual_vs_predicted": 6.088541666666667,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "fir_direct",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 1,
+      "fp32_fma": 8454144.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 4097.0,
+      "fp32_total": 8458241.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 8722407.0,
+      "dram_bytes": 43648.0,
+      "dram_kb": 42.625,
+      "dram_words": 10912.0,
+      "to_pred_macs": 262144.0,
+      "to_pred_mem_words": 8256.0,
+      "ratio_fp_actual_vs_predicted": 32.265628814697266,
+      "ratio_mem_actual_vs_predicted": 1.321705426356589,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "fir_fft",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 6,
+      "fp32_fma": 199680.0,
+      "fp32_add": 331775.0,
+      "fp32_mul": 190720.0,
+      "fp32_total": 722175.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 639618.0,
+      "dram_bytes": 456576.0,
+      "dram_kb": 445.875,
+      "dram_words": 114144.0,
+      "to_pred_macs": 1114112.0,
+      "to_pred_mem_words": 20480.0,
+      "ratio_fp_actual_vs_predicted": 0.6482068230124081,
+      "ratio_mem_actual_vs_predicted": 5.5734375,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "wiener",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 10,
+      "fp32_fma": 141312.0,
+      "fp32_add": 193791.0,
+      "fp32_mul": 128510.0,
+      "fp32_total": 463613.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 666754.0,
+      "dram_bytes": 467072.0,
+      "dram_kb": 456.125,
+      "dram_words": 116768.0,
+      "to_pred_macs": 544768.0,
+      "to_pred_mem_words": 12288.0,
+      "ratio_fp_actual_vs_predicted": 0.8510283276550752,
+      "ratio_mem_actual_vs_predicted": 9.502604166666666,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "matched_filter",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 7,
+      "fp32_fma": 199680.0,
+      "fp32_add": 339967.0,
+      "fp32_mul": 190720.0,
+      "fp32_total": 730367.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 668290.0,
+      "dram_bytes": 527104.0,
+      "dram_kb": 514.75,
+      "dram_words": 131776.0,
+      "to_pred_macs": 1114112.0,
+      "to_pred_mem_words": 20480.0,
+      "ratio_fp_actual_vs_predicted": 0.6555597641888786,
+      "ratio_mem_actual_vs_predicted": 6.434375,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "savgol",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 1,
+      "fp32_fma": 28660.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 4096.0,
+      "fp32_total": 32756.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 552908.0,
+      "dram_bytes": 28800.0,
+      "dram_kb": 28.125,
+      "dram_words": 7200.0,
+      "to_pred_macs": 28672.0,
+      "to_pred_mem_words": 8199.0,
+      "ratio_fp_actual_vs_predicted": 1.1424386160714286,
+      "ratio_mem_actual_vs_predicted": 0.8781558726673985,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "median",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 2,
+      "fp32_fma": 0.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 0.0,
+      "fp32_total": 0.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 35324920.0,
+      "dram_bytes": 149632.0,
+      "dram_kb": 146.125,
+      "dram_words": 37408.0,
+      "to_pred_macs": 29433.745714185094,
+      "to_pred_mem_words": 8186.0,
+      "ratio_fp_actual_vs_predicted": 0.0,
+      "ratio_mem_actual_vs_predicted": 4.569753237234303,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "filterbank_32ch",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 1,
+      "fp32_fma": 8454144.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 131104.0,
+      "fp32_total": 8585248.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 9127174.0,
+      "dram_bytes": 51584.0,
+      "dram_kb": 50.375,
+      "dram_words": 12896.0,
+      "to_pred_macs": 8388608.0,
+      "to_pred_mem_words": 137216.0,
+      "ratio_fp_actual_vs_predicted": 1.0234413146972656,
+      "ratio_mem_actual_vs_predicted": 0.09398320895522388,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "periodogram",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 6,
+      "fp32_fma": 56320.0,
+      "fp32_add": 95487.0,
+      "fp32_mul": 74494.0,
+      "fp32_total": 226301.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 403586.0,
+      "dram_bytes": 226944.0,
+      "dram_kb": 221.625,
+      "dram_words": 56736.0,
+      "to_pred_macs": 270336.0,
+      "to_pred_mem_words": 8192.0,
+      "ratio_fp_actual_vs_predicted": 0.8371101148200758,
+      "ratio_mem_actual_vs_predicted": 6.92578125,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "welch",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 7,
+      "fp32_fma": 85248.0,
+      "fp32_add": 133279.0,
+      "fp32_mul": 123074.0,
+      "fp32_total": 341601.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 1030706.0,
+      "dram_bytes": 432768.0,
+      "dram_kb": 422.625,
+      "dram_words": 108192.0,
+      "to_pred_macs": 349440.0,
+      "to_pred_mem_words": 12032.0,
+      "ratio_fp_actual_vs_predicted": 0.9775669642857143,
+      "ratio_mem_actual_vs_predicted": 8.992021276595745,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "svd",
+      "N": 1024,
+      "B": 1,
+      "n_kernels": 137,
+      "fp32_fma": 61055192.0,
+      "fp32_add": 6940980.0,
+      "fp32_mul": 17808281.0,
+      "fp32_total": 85804453.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 87410035.0,
+      "dram_bytes": 6957824.0,
+      "dram_kb": 6794.75,
+      "dram_words": 1739456.0,
+      "to_pred_macs": 25165824.0,
+      "to_pred_mem_words": 135168.0,
+      "ratio_fp_actual_vs_predicted": 3.409562627474467,
+      "ratio_mem_actual_vs_predicted": 12.868844696969697,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "pca",
+      "N": 1024,
+      "B": 1,
+      "n_kernels": 166,
+      "fp32_fma": 37522760.0,
+      "fp32_add": 1533626.0,
+      "fp32_mul": 4336321.0,
+      "fp32_total": 43392707.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 48247825.0,
+      "dram_bytes": 7128320.0,
+      "dram_kb": 6961.25,
+      "dram_words": 1782080.0,
+      "to_pred_macs": 660160.0,
+      "to_pred_mem_words": 66048.0,
+      "ratio_fp_actual_vs_predicted": 65.7305910688318,
+      "ratio_mem_actual_vs_predicted": 26.981589147286822,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "cnn_denoiser",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 8,
+      "fp32_fma": 31460992.0,
+      "fp32_add": 0.0,
+      "fp32_mul": 266240.0,
+      "fp32_total": 31727232.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 47883817.0,
+      "dram_bytes": 3323264.0,
+      "dram_kb": 3245.375,
+      "dram_words": 830816.0,
+      "to_pred_macs": 11341660.16,
+      "to_pred_mem_words": 8245.1456,
+      "ratio_fp_actual_vs_predicted": 2.7974063366751416,
+      "ratio_mem_actual_vs_predicted": 100.76426060929718,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "lstm_denoiser",
+      "N": 1024,
+      "B": 1,
+      "n_kernels": 6,
+      "fp32_fma": 68682752.0,
+      "fp32_add": 1446400.0,
+      "fp32_mul": 2245632.0,
+      "fp32_total": 72374784.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 15643776.0,
+      "dram_bytes": 3120128.0,
+      "dram_kb": 3047.0,
+      "dram_words": 780032.0,
+      "to_pred_macs": 52992409.6,
+      "to_pred_mem_words": 50496.0,
+      "ratio_fp_actual_vs_predicted": 1.36575755936186,
+      "ratio_mem_actual_vs_predicted": 15.447401774397973,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "transformer_denoiser",
+      "N": 1024,
+      "B": 1,
+      "n_kernels": 24,
+      "fp32_fma": 71357440.0,
+      "fp32_add": 119155073.0,
+      "fp32_mul": 31024513.0,
+      "fp32_total": 221537026.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 275267838.0,
+      "dram_bytes": 9630592.0,
+      "dram_kb": 9404.875,
+      "dram_words": 2407648.0,
+      "to_pred_macs": 378252820.48,
+      "to_pred_mem_words": 66688.0,
+      "ratio_fp_actual_vs_predicted": 0.5856850603754155,
+      "ratio_mem_actual_vs_predicted": 36.1031669865643,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "jpeg_q50",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 7,
+      "fp32_fma": 4247552.0,
+      "fp32_add": 454656.0,
+      "fp32_mul": 536576.0,
+      "fp32_total": 5238784.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 8099840.0,
+      "dram_bytes": 303488.0,
+      "dram_kb": 296.375,
+      "dram_words": 75872.0,
+      "to_pred_macs": 75776.0,
+      "to_pred_mem_words": 8192.0,
+      "ratio_fp_actual_vs_predicted": 69.13513513513513,
+      "ratio_mem_actual_vs_predicted": 9.26171875,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    },
+    {
+      "algorithm": "mdct_audio",
+      "N": 4096,
+      "B": 1,
+      "n_kernels": 77,
+      "fp32_fma": 3748864.0,
+      "fp32_add": 125440.0,
+      "fp32_mul": 21504.0,
+      "fp32_total": 3895808.0,
+      "fp16_total": 0.0,
+      "fp_misc": 0.0,
+      "int_total": 13862016.0,
+      "dram_bytes": 15440640.0,
+      "dram_kb": 15078.75,
+      "dram_words": 3860160.0,
+      "to_pred_macs": 266240.0,
+      "to_pred_mem_words": 8192.0,
+      "ratio_fp_actual_vs_predicted": 14.632692307692308,
+      "ratio_mem_actual_vs_predicted": 471.2109375,
+      "experiment": "F-001 (v0)",
+      "mode": "full"
+    }
+  ],
+  "v1_entries": [
+    {
+      "experiment": "EXP-CR-002",
+      "algorithm": "fft",
+      "N": 256,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 1536.0,
+        "fp32_add": 3407.0,
+        "fp32_mul": 1440.0,
+        "fp32_total": 6383.0,
+        "int_total": 20354.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 60544.0,
+        "dram_words": 15136.0,
+        "n_kernels": 2
+      },
+      "split_radix_ops": 6664.0,
+      "cooley_tukey_ops": 10240.0,
+      "ratio_meas_over_split_radix": 0.9578331332533013,
+      "ratio_meas_over_cooley_tukey": 0.62333984375,
+      "to_pred_macs": 6664.0,
+      "ratio_fp_actual_vs_predicted": 0.9578331332533013,
+      "to_pred_mem_words": 768.0,
+      "kernel_names": [
+        [
+          "void vector_fft_r2c<(unsigned int)256, EPT<(unsigned int)16>, (unsigne",
+          1
+        ],
+        [
+          "void at::native::_fft_conjugate_copy_kernel<c10::complex<float>, Offse",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_fft_N256_B1.csv",
+      "seconds": 5.384745599993039
+    },
+    {
+      "experiment": "EXP-CR-002",
+      "algorithm": "fft",
+      "N": 1024,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 9728.0,
+        "fp32_add": 17727.0,
+        "fp32_mul": 9344.0,
+        "fp32_total": 36799.0,
+        "int_total": 70338.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 69632.0,
+        "dram_words": 17408.0,
+        "n_kernels": 2
+      },
+      "split_radix_ops": 34824.0,
+      "cooley_tukey_ops": 51200.0,
+      "ratio_meas_over_split_radix": 1.0567137606248564,
+      "ratio_meas_over_cooley_tukey": 0.71873046875,
+      "to_pred_macs": 34824.0,
+      "ratio_fp_actual_vs_predicted": 1.0567137606248564,
+      "to_pred_mem_words": 3072.0,
+      "kernel_names": [
+        [
+          "void vector_fft_r2c<(unsigned int)1024, EPT<(unsigned int)16>, (unsign",
+          1
+        ],
+        [
+          "void at::native::_fft_conjugate_copy_kernel<c10::complex<float>, Offse",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_fft_N1024_B1.csv",
+      "seconds": 3.1423588000470772
+    },
+    {
+      "experiment": "EXP-CR-002",
+      "algorithm": "fft",
+      "N": 4096,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 44032.0,
+        "fp32_add": 87295.0,
+        "fp32_mul": 41728.0,
+        "fp32_total": 173055.0,
+        "int_total": 273538.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 98944.0,
+        "dram_words": 24736.0,
+        "n_kernels": 2
+      },
+      "split_radix_ops": 172040.0,
+      "cooley_tukey_ops": 245760.0,
+      "ratio_meas_over_split_radix": 1.005899790746338,
+      "ratio_meas_over_cooley_tukey": 0.70416259765625,
+      "to_pred_macs": 172040.0,
+      "ratio_fp_actual_vs_predicted": 1.005899790746338,
+      "to_pred_mem_words": 12288.0,
+      "kernel_names": [
+        [
+          "void vector_fft_r2c<(unsigned int)4096, EPT<(unsigned int)16>, (unsign",
+          1
+        ],
+        [
+          "void at::native::_fft_conjugate_copy_kernel<c10::complex<float>, Offse",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_fft_N4096_B1.csv",
+      "seconds": 2.9318165999720804
+    },
+    {
+      "experiment": "EXP-CR-002",
+      "algorithm": "fft",
+      "N": 16384,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 145408.0,
+        "fp32_add": 253951.0,
+        "fp32_mul": 136704.0,
+        "fp32_total": 536063.0,
+        "int_total": 1108610.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 230016.0,
+        "dram_words": 57504.0,
+        "n_kernels": 2
+      },
+      "split_radix_ops": 819208.0,
+      "cooley_tukey_ops": 1146880.0,
+      "ratio_meas_over_split_radix": 0.6543673889903419,
+      "ratio_meas_over_cooley_tukey": 0.46740984235491073,
+      "to_pred_macs": 819208.0,
+      "ratio_fp_actual_vs_predicted": 0.6543673889903419,
+      "to_pred_mem_words": 49152.0,
+      "kernel_names": [
+        [
+          "void vector_fft_symm_r2c<(unsigned int)16384, EPT<(unsigned int)32>, (",
+          1
+        ],
+        [
+          "void at::native::_fft_conjugate_copy_kernel<c10::complex<float>, Offse",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_fft_N16384_B1.csv",
+      "seconds": 2.9847333999932744
+    },
+    {
+      "experiment": "EXP-CR-002",
+      "algorithm": "fft",
+      "N": 65536,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 851983.0,
+        "fp32_add": 1081347.0,
+        "fp32_mul": 583688.0,
+        "fp32_total": 2517018.0,
+        "int_total": 5440414.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 1137920.0,
+        "dram_words": 284480.0,
+        "n_kernels": 4
+      },
+      "split_radix_ops": 3801096.0,
+      "cooley_tukey_ops": 5242880.0,
+      "ratio_meas_over_split_radix": 0.6621821706160539,
+      "ratio_meas_over_cooley_tukey": 0.4800830841064453,
+      "to_pred_macs": 3801096.0,
+      "ratio_fp_actual_vs_predicted": 0.6621821706160539,
+      "to_pred_mem_words": 196608.0,
+      "kernel_names": [
+        [
+          "void regular_fft_factor<(unsigned int)128, EPT<(unsigned int)16>, (uns",
+          1
+        ],
+        [
+          "void regular_fft_factor<(unsigned int)256, EPT<(unsigned int)16>, (uns",
+          1
+        ],
+        [
+          "void postprocess_kernel<float, unsigned int, (loadstore_modifier_t)2>(",
+          1
+        ],
+        [
+          "void at::native::_fft_conjugate_copy_kernel<c10::complex<float>, Offse",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_fft_N65536_B1.csv",
+      "seconds": 2.993725500011351
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "dwt_db4",
+      "N": 4096,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 32760.0,
+        "fp32_add": 0.0,
+        "fp32_mul": 4098.0,
+        "fp32_total": 36858.0,
+        "int_total": 567468.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 59520.0,
+        "dram_words": 14880.0,
+        "n_kernels": 2
+      },
+      "fp32_total_per_invocation": 36858.0,
+      "to_pred_macs": 32768.0,
+      "ratio_fp_actual_vs_predicted": 1.12481689453125,
+      "to_pred_mem_words": 8192.0,
+      "ratio_mem_actual_vs_predicted": 1.81640625,
+      "kernel_names": [
+        [
+          "void cudnn::cnn::conv2d_grouped_direct_kernel<(bool)0, (bool)1, (bool)",
+          2
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_dwt_db4_N4096_B1.csv",
+      "seconds": 3.132747300027404
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "iir_butter4",
+      "N": 4096,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 36914.0,
+        "fp32_add": 0.0,
+        "fp32_mul": 4096.0,
+        "fp32_total": 41010.0,
+        "int_total": 750211.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 161280.0,
+        "dram_words": 40320.0,
+        "n_kernels": 8
+      },
+      "fp32_total_per_invocation": 41010.0,
+      "to_pred_macs": 53248.0,
+      "ratio_fp_actual_vs_predicted": 0.7701697716346154,
+      "to_pred_mem_words": 8196.0,
+      "ratio_mem_actual_vs_predicted": 4.919472913616398,
+      "kernel_names": [
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ],
+        [
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::n",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          2
+        ],
+        [
+          "void cudnn::cnn::conv2d_grouped_direct_kernel<(bool)0, (bool)1, (bool)",
+          1
+        ],
+        [
+          "void iir_cu_kernel<float>(at::GenericPackedTensorAccessor<T1, (unsigne",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_iir_butter4_N4096_B1.csv",
+      "seconds": 4.6692673999932595
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "music",
+      "N": 1024,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 10587485.0,
+        "fp32_add": 540039.0,
+        "fp32_mul": 716564.0,
+        "fp32_total": 11844088.0,
+        "int_total": 5820635.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 1897216.0,
+        "dram_words": 474304.0,
+        "n_kernels": 37
+      },
+      "fp32_total_per_invocation": 11844088.0,
+      "to_pred_macs": 3207475.2,
+      "ratio_fp_actual_vs_predicted": 3.692651466175015,
+      "to_pred_mem_words": 24832.0,
+      "ratio_mem_actual_vs_predicted": 19.100515463917525,
+      "kernel_names": [
+        [
+          "copy_info_kernel(int, int *)",
+          3
+        ],
+        [
+          "void scal_kernel<float2, float2, (int)1, (bool)1, (int)6, (int)4, (int",
+          2
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::con",
+          2
+        ],
+        [
+          "void cgemm_largek<(bool)1, (bool)0, (bool)1, (bool)0, (int)4, (int)4, ",
+          1
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BUn",
+          1
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_music_N1024_B1.csv",
+      "seconds": 4.924076800001785
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "esprit",
+      "N": 1024,
+      "B": 1,
+      "mode": "full",
+      "measured": {
+        "fp32_fma": 1626457.0,
+        "fp32_add": 249280.0,
+        "fp32_mul": 185640.0,
+        "fp32_total": 2061377.0,
+        "int_total": 922348.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 691456.0,
+        "dram_words": 172864.0,
+        "n_kernels": 44
+      },
+      "fp32_total_per_invocation": 2061377.0,
+      "to_pred_macs": 2102382.0,
+      "ratio_fp_actual_vs_predicted": 0.9804959327087085,
+      "to_pred_mem_words": 16640.0,
+      "ratio_mem_actual_vs_predicted": 10.388461538461538,
+      "kernel_names": [
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          6
+        ],
+        [
+          "copy_info_kernel(int, int *)",
+          6
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          4
+        ],
+        [
+          "void ormqr_cta_kernel<float2, (int)4, (int)1>(long long, long long, lo",
+          2
+        ],
+        [
+          "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+          2
+        ],
+        [
+          "void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_",
+          2
+        ]
+      ],
+      "csv": "data\\ncu_profiles\\v1\\ncu_esprit_N1024_B1.csv",
+      "seconds": 4.776279199984856
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "lms",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 7,
+      "setup_kernels": 1,
+      "iterations": 200,
+      "census_kernels": 1401,
+      "window_A": {
+        "fp32_fma": 33.0,
+        "fp32_add": 288.0,
+        "fp32_mul": 65.0,
+        "fp32_total": 386.0,
+        "int_total": 14649.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 104576.0,
+        "dram_words": 26144.0,
+        "n_kernels": 8
+      },
+      "window_B": {
+        "fp32_fma": 66.0,
+        "fp32_add": 576.0,
+        "fp32_mul": 130.0,
+        "fp32_total": 772.0,
+        "int_total": 26035.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 201472.0,
+        "dram_words": 50368.0,
+        "n_kernels": 14
+      },
+      "window_B_first_half": {
+        "fp32_fma": 33.0,
+        "fp32_add": 288.0,
+        "fp32_mul": 65.0,
+        "fp32_total": 386.0,
+        "int_total": 12570.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 100736.0,
+        "dram_words": 25184.0,
+        "n_kernels": 7
+      },
+      "window_B_second_half": {
+        "fp32_fma": 33.0,
+        "fp32_add": 288.0,
+        "fp32_mul": 65.0,
+        "fp32_total": 386.0,
+        "int_total": 13465.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 100736.0,
+        "dram_words": 25184.0,
+        "n_kernels": 7
+      },
+      "fp32_per_iter": 386.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 77200.0,
+      "dram_words_per_iter": 25184.0,
+      "dram_words_per_invocation": 5036800.0,
+      "to_pred_macs": 19400.0,
+      "ratio_fp_actual_vs_predicted": 3.979381443298969,
+      "to_pred_mem_words": 8224.0,
+      "ratio_mem_actual_vs_predicted": 612.4513618677042,
+      "kernel_names_B": [
+        [
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::n",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Bin",
+          2
+        ],
+        [
+          "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          2
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          2
+        ],
+        [
+          "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctor_a",
+          1
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUD",
+          1
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_lms_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_lms_N4096_B1_winB.csv"
+      ],
+      "seconds": 7.291310300002806,
+      "model_seq_steps": 1400
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "nlms",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 12,
+      "setup_kernels": 1,
+      "iterations": 200,
+      "census_kernels": 2401,
+      "window_A": {
+        "fp32_fma": 36.0,
+        "fp32_add": 577.0,
+        "fp32_mul": 98.0,
+        "fp32_total": 711.0,
+        "int_total": 24570.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 177024.0,
+        "dram_words": 44256.0,
+        "n_kernels": 13
+      },
+      "window_B": {
+        "fp32_fma": 72.0,
+        "fp32_add": 1154.0,
+        "fp32_mul": 196.0,
+        "fp32_total": 1422.0,
+        "int_total": 45877.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 348928.0,
+        "dram_words": 87232.0,
+        "n_kernels": 24
+      },
+      "window_B_first_half": {
+        "fp32_fma": 36.0,
+        "fp32_add": 577.0,
+        "fp32_mul": 98.0,
+        "fp32_total": 711.0,
+        "int_total": 22491.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 173184.0,
+        "dram_words": 43296.0,
+        "n_kernels": 12
+      },
+      "window_B_second_half": {
+        "fp32_fma": 36.0,
+        "fp32_add": 577.0,
+        "fp32_mul": 98.0,
+        "fp32_total": 711.0,
+        "int_total": 23386.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 175744.0,
+        "dram_words": 43936.0,
+        "n_kernels": 12
+      },
+      "fp32_per_iter": 711.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 142200.0,
+      "dram_words_per_iter": 43616.0,
+      "dram_words_per_invocation": 8723200.0,
+      "to_pred_macs": 26400.0,
+      "ratio_fp_actual_vs_predicted": 5.386363636363637,
+      "to_pred_mem_words": 8224.0,
+      "ratio_mem_actual_vs_predicted": 1060.7003891050583,
+      "kernel_names_B": [
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Bin",
+          4
+        ],
+        [
+          "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          4
+        ],
+        [
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::n",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, void at::native",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rec",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          2
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ],
+        [
+          "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctor_a",
+          1
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUD",
+          1
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_nlms_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_nlms_N4096_B1_winB.csv"
+      ],
+      "seconds": 8.44555110001238,
+      "model_seq_steps": 2200
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "rls",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 13,
+      "setup_kernels": 4,
+      "iterations": 100,
+      "census_kernels": 1304,
+      "window_A": {
+        "fp32_fma": 3396.0,
+        "fp32_add": 1394.0,
+        "fp32_mul": 3136.0,
+        "fp32_total": 7926.0,
+        "int_total": 92534.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 183936.0,
+        "dram_words": 45984.0,
+        "n_kernels": 17
+      },
+      "window_B": {
+        "fp32_fma": 6792.0,
+        "fp32_add": 2788.0,
+        "fp32_mul": 4224.0,
+        "fp32_total": 13804.0,
+        "int_total": 168877.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 313600.0,
+        "dram_words": 78400.0,
+        "n_kernels": 26
+      },
+      "window_B_first_half": {
+        "fp32_fma": 3396.0,
+        "fp32_add": 1394.0,
+        "fp32_mul": 2112.0,
+        "fp32_total": 6902.0,
+        "int_total": 83991.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 157440.0,
+        "dram_words": 39360.0,
+        "n_kernels": 13
+      },
+      "window_B_second_half": {
+        "fp32_fma": 3396.0,
+        "fp32_add": 1394.0,
+        "fp32_mul": 2112.0,
+        "fp32_total": 6902.0,
+        "int_total": 84886.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 156160.0,
+        "dram_words": 39040.0,
+        "n_kernels": 13
+      },
+      "fp32_per_iter": 6902.0,
+      "fp32_setup": 1024.0,
+      "fp32_total_per_invocation": 691224.0,
+      "dram_words_per_iter": 39200.0,
+      "dram_words_per_invocation": 3920000.0,
+      "to_pred_macs": 633700.0,
+      "ratio_fp_actual_vs_predicted": 1.090774814581032,
+      "to_pred_mem_words": 9216.0,
+      "ratio_mem_actual_vs_predicted": 425.34722222222223,
+      "kernel_names_B": [
+        [
+          "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, floa",
+          6
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          6
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          4
+        ],
+        [
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::n",
+          2
+        ],
+        [
+          "void gemvNSP_kernel<float, float, float, float, (int)1, (int)32, (int)",
+          2
+        ],
+        [
+          "void gemmk1_kernel<int, float, (int)256, (int)5, (bool)0, (bool)0, (bo",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BUn",
+          2
+        ],
+        [
+          "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctor_a",
+          1
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)2, at::native::CUD",
+          1
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_rls_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_rls_N4096_B1_winB.csv"
+      ],
+      "seconds": 8.300663900037762,
+      "model_seq_steps": 1200
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "apa_p4",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 28,
+      "setup_kernels": 1,
+      "iterations": 100,
+      "census_kernels": 2801,
+      "window_A": {
+        "fp32_fma": 131992.0,
+        "fp32_add": 12988.0,
+        "fp32_mul": 16574.0,
+        "fp32_total": 161554.0,
+        "int_total": 272259.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 282368.0,
+        "dram_words": 70592.0,
+        "n_kernels": 29
+      },
+      "window_B": {
+        "fp32_fma": 263984.0,
+        "fp32_add": 25976.0,
+        "fp32_mul": 33148.0,
+        "fp32_total": 323108.0,
+        "int_total": 543042.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 551424.0,
+        "dram_words": 137856.0,
+        "n_kernels": 56
+      },
+      "window_B_first_half": {
+        "fp32_fma": 131992.0,
+        "fp32_add": 12988.0,
+        "fp32_mul": 16574.0,
+        "fp32_total": 161554.0,
+        "int_total": 271967.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 276992.0,
+        "dram_words": 69248.0,
+        "n_kernels": 28
+      },
+      "window_B_second_half": {
+        "fp32_fma": 131992.0,
+        "fp32_add": 12988.0,
+        "fp32_mul": 16574.0,
+        "fp32_total": 161554.0,
+        "int_total": 271075.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 274432.0,
+        "dram_words": 68608.0,
+        "n_kernels": 28
+      },
+      "fp32_per_iter": 161554.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 16155400.0,
+      "dram_words_per_iter": 68928.0,
+      "dram_words_per_invocation": 6892800.0,
+      "to_pred_macs": 84100.0,
+      "ratio_fp_actual_vs_predicted": 192.0975029726516,
+      "to_pred_mem_words": 8352.0,
+      "ratio_mem_actual_vs_predicted": 825.2873563218391,
+      "kernel_names_B": [
+        [
+          "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::n",
+          8
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          4
+        ],
+        [
+          "void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_",
+          4
+        ],
+        [
+          "void at::native::<unnamed>::CatArrayBatchedCopy_aligned16_contig<at::n",
+          2
+        ],
+        [
+          "void gemvNSP_kernel<float, float, float, float, (int)1, (int)32, (int)",
+          2
+        ],
+        [
+          "ampere_sgemm_32x32_sliced1x4_nt",
+          2
+        ],
+        [
+          "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          2
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_apa_p4_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_apa_p4_N4096_B1_winB.csv"
+      ],
+      "seconds": 10.558751299977303,
+      "model_seq_steps": 1500
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "kalman",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 31,
+      "setup_kernels": 3,
+      "iterations": 200,
+      "census_kernels": 6203,
+      "window_A": {
+        "fp32_fma": 66076.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8357.0,
+        "fp32_total": 82007.0,
+        "int_total": 225791.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 292992.0,
+        "dram_words": 73248.0,
+        "n_kernels": 34
+      },
+      "window_B": {
+        "fp32_fma": 132152.0,
+        "fp32_add": 15148.0,
+        "fp32_mul": 16714.0,
+        "fp32_total": 164014.0,
+        "int_total": 446182.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 543616.0,
+        "dram_words": 135904.0,
+        "n_kernels": 62
+      },
+      "window_B_first_half": {
+        "fp32_fma": 66076.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8357.0,
+        "fp32_total": 82007.0,
+        "int_total": 223091.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 271744.0,
+        "dram_words": 67936.0,
+        "n_kernels": 31
+      },
+      "window_B_second_half": {
+        "fp32_fma": 66076.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8357.0,
+        "fp32_total": 82007.0,
+        "int_total": 223091.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 271872.0,
+        "dram_words": 67968.0,
+        "n_kernels": 31
+      },
+      "fp32_per_iter": 82007.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 16401400.0,
+      "dram_words_per_iter": 67952.0,
+      "dram_words_per_invocation": 13590400.0,
+      "to_pred_macs": 31200.0,
+      "ratio_fp_actual_vs_predicted": 525.6858974358975,
+      "to_pred_mem_words": 8212.0,
+      "ratio_mem_actual_vs_predicted": 1654.943984413054,
+      "kernel_names_B": [
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          9
+        ],
+        [
+          "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, floa",
+          6
+        ],
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)4,",
+          6
+        ],
+        [
+          "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4",
+          4
+        ],
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)2,",
+          4
+        ],
+        [
+          "void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          2
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          2
+        ],
+        [
+          "xxtrf4_set_info_ker(int, int *)",
+          2
+        ],
+        [
+          "void getrf_pivot<getrf_params_<float, (int)32, (int)1, (int)32, (int)3",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_kalman_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_kalman_N4096_B1_winB.csv"
+      ],
+      "seconds": 11.351800000004005,
+      "model_seq_steps": 3000
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "ekf",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 39,
+      "setup_kernels": 3,
+      "iterations": 200,
+      "census_kernels": 7803,
+      "window_A": {
+        "fp32_fma": 66156.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8393.0,
+        "fp32_total": 82123.0,
+        "int_total": 240527.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 366976.0,
+        "dram_words": 91744.0,
+        "n_kernels": 42
+      },
+      "window_B": {
+        "fp32_fma": 132314.0,
+        "fp32_add": 15148.0,
+        "fp32_mul": 16786.0,
+        "fp32_total": 164248.0,
+        "int_total": 475652.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 705280.0,
+        "dram_words": 176320.0,
+        "n_kernels": 78
+      },
+      "window_B_first_half": {
+        "fp32_fma": 66156.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8393.0,
+        "fp32_total": 82123.0,
+        "int_total": 237827.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 353152.0,
+        "dram_words": 88288.0,
+        "n_kernels": 39
+      },
+      "window_B_second_half": {
+        "fp32_fma": 66158.0,
+        "fp32_add": 7574.0,
+        "fp32_mul": 8393.0,
+        "fp32_total": 82125.0,
+        "int_total": 237825.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 352128.0,
+        "dram_words": 88032.0,
+        "n_kernels": 39
+      },
+      "fp32_per_iter": 82124.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 16424800.0,
+      "dram_words_per_iter": 88160.0,
+      "dram_words_per_invocation": 17632000.0,
+      "to_pred_macs": 41600.0,
+      "ratio_fp_actual_vs_predicted": 394.8269230769231,
+      "to_pred_mem_words": 8212.0,
+      "ratio_mem_actual_vs_predicted": 2147.1018022406233,
+      "kernel_names_B": [
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          13
+        ],
+        [
+          "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, floa",
+          6
+        ],
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)4,",
+          6
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          4
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          4
+        ],
+        [
+          "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4",
+          4
+        ],
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)2,",
+          4
+        ],
+        [
+          "void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::sin",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_ekf_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_ekf_N4096_B1_winB.csv"
+      ],
+      "seconds": 12.891952599980868,
+      "model_seq_steps": 4400
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "ukf",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 54,
+      "setup_kernels": 6,
+      "iterations": 100,
+      "census_kernels": 5406,
+      "window_A": {
+        "fp32_fma": 14260.0,
+        "fp32_add": 1376.0,
+        "fp32_mul": 1544.0,
+        "fp32_total": 17180.0,
+        "int_total": 179849.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 516224.0,
+        "dram_words": 129056.0,
+        "n_kernels": 60
+      },
+      "window_B": {
+        "fp32_fma": 28523.0,
+        "fp32_add": 2752.0,
+        "fp32_mul": 3056.0,
+        "fp32_total": 34331.0,
+        "int_total": 347658.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 940672.0,
+        "dram_words": 235168.0,
+        "n_kernels": 108
+      },
+      "window_B_first_half": {
+        "fp32_fma": 14260.0,
+        "fp32_add": 1376.0,
+        "fp32_mul": 1528.0,
+        "fp32_total": 17164.0,
+        "int_total": 173829.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 471808.0,
+        "dram_words": 117952.0,
+        "n_kernels": 54
+      },
+      "window_B_second_half": {
+        "fp32_fma": 14263.0,
+        "fp32_add": 1376.0,
+        "fp32_mul": 1528.0,
+        "fp32_total": 17167.0,
+        "int_total": 173829.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 468864.0,
+        "dram_words": 117216.0,
+        "n_kernels": 54
+      },
+      "fp32_per_iter": 17165.5,
+      "fp32_setup": 14.5,
+      "fp32_total_per_invocation": 1716564.5,
+      "dram_words_per_iter": 117584.0,
+      "dram_words_per_invocation": 11758400.0,
+      "to_pred_macs": 53460.0,
+      "ratio_fp_actual_vs_predicted": 32.109324728769174,
+      "to_pred_mem_words": 16436.0,
+      "ratio_mem_actual_vs_predicted": 715.4052080798248,
+      "kernel_names_B": [
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          38
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          26
+        ],
+        [
+          "void gemmk1_kernel<int, float, (int)256, (int)5, (bool)1, (bool)0, (bo",
+          18
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          10
+        ],
+        [
+          "xxtrf4_set_info_ker(int, int *)",
+          2
+        ],
+        [
+          "void kernel<getrf_wo_pivot_params_<float, (int)0, (int)128, (int)1, (i",
+          2
+        ],
+        [
+          "void at::native::triu_tril_kernel<float, int, (bool)0, (int)2, (bool)1",
+          2
+        ],
+        [
+          "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          2
+        ],
+        [
+          "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_ukf_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_ukf_N4096_B1_winB.csv"
+      ],
+      "seconds": 14.328162399935536,
+      "model_seq_steps": 4300
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "particle_1k",
+      "N": 4096,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 21,
+      "setup_kernels": 3,
+      "iterations": 200,
+      "census_kernels": 4203,
+      "window_A": {
+        "fp32_fma": 272530.0,
+        "fp32_add": 34063.0,
+        "fp32_mul": 124304.0,
+        "fp32_total": 430897.0,
+        "int_total": 2432843.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 509312.0,
+        "dram_words": 127328.0,
+        "n_kernels": 24
+      },
+      "window_B": {
+        "fp32_fma": 291300.0,
+        "fp32_add": 51742.0,
+        "fp32_mul": 132304.0,
+        "fp32_total": 475346.0,
+        "int_total": 3149142.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 965888.0,
+        "dram_words": 241472.0,
+        "n_kernels": 42
+      },
+      "window_B_first_half": {
+        "fp32_fma": 145650.0,
+        "fp32_add": 25871.0,
+        "fp32_mul": 66152.0,
+        "fp32_total": 237673.0,
+        "int_total": 1574547.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 482432.0,
+        "dram_words": 120608.0,
+        "n_kernels": 21
+      },
+      "window_B_second_half": {
+        "fp32_fma": 145650.0,
+        "fp32_add": 25871.0,
+        "fp32_mul": 66152.0,
+        "fp32_total": 237673.0,
+        "int_total": 1574595.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 483456.0,
+        "dram_words": 120864.0,
+        "n_kernels": 21
+      },
+      "fp32_per_iter": 237673.0,
+      "fp32_setup": 193224.0,
+      "fp32_total_per_invocation": 47727824.0,
+      "dram_words_per_iter": 120736.0,
+      "dram_words_per_invocation": 24147200.0,
+      "to_pred_macs": 5561000.0,
+      "ratio_fp_actual_vs_predicted": 8.582597374572918,
+      "to_pred_mem_words": 20384.0,
+      "ratio_mem_actual_vs_predicted": 1184.6153846153845,
+      "kernel_names_B": [
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          8
+        ],
+        [
+          "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<",
+          6
+        ],
+        [
+          "void at::native::<unnamed>::distribution_elementwise_grid_stride_kerne",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUn",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, void at::native",
+          2
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::exp",
+          2
+        ],
+        [
+          "void at_cuda_detail::cub::DeviceScanInitKernel<at_cuda_detail::cub::Sc",
+          2
+        ],
+        [
+          "void at_cuda_detail::cub::DeviceScanKernel<at_cuda_detail::cub::Device",
+          2
+        ],
+        [
+          "void <unnamed>::elementwise_kernel_with_index<int, at::native::arange_",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_particle_1k_N4096_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_particle_1k_N4096_B1_winB.csv"
+      ],
+      "seconds": 10.453056400059722,
+      "model_seq_steps": 4000
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "fastica",
+      "N": 1024,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 27,
+      "setup_kernels": 4,
+      "iterations": 50,
+      "census_kernels": 1354,
+      "window_A": {
+        "fp32_fma": 473207.0,
+        "fp32_add": 201601.0,
+        "fp32_mul": 95460.0,
+        "fp32_total": 770268.0,
+        "int_total": 1506765.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 586752.0,
+        "dram_words": 146688.0,
+        "n_kernels": 31
+      },
+      "window_B": {
+        "fp32_fma": 8566804.0,
+        "fp32_add": 870616.0,
+        "fp32_mul": 1099984.0,
+        "fp32_total": 10537404.0,
+        "int_total": 13534428.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 891264.0,
+        "dram_words": 222816.0,
+        "n_kernels": 54
+      },
+      "window_B_first_half": {
+        "fp32_fma": 4320086.0,
+        "fp32_add": 445849.0,
+        "fp32_mul": 552038.0,
+        "fp32_total": 5317973.0,
+        "int_total": 6966425.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 448512.0,
+        "dram_words": 112128.0,
+        "n_kernels": 27
+      },
+      "window_B_second_half": {
+        "fp32_fma": 4246718.0,
+        "fp32_add": 424767.0,
+        "fp32_mul": 547946.0,
+        "fp32_total": 5219431.0,
+        "int_total": 6568003.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 442752.0,
+        "dram_words": 110688.0,
+        "n_kernels": 27
+      },
+      "fp32_per_iter": 5268702.0,
+      "fp32_setup": 0.0,
+      "fp32_total_per_invocation": 263435100.0,
+      "dram_words_per_iter": 111408.0,
+      "dram_words_per_invocation": 5570400.0,
+      "to_pred_macs": 3000600.0,
+      "ratio_fp_actual_vs_predicted": 87.79414117176565,
+      "to_pred_mem_words": 20496.0,
+      "ratio_mem_actual_vs_predicted": 271.7798594847775,
+      "kernel_names_B": [
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)4,",
+          6
+        ],
+        [
+          "copy_info_kernel(int, int *)",
+          6
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Fil",
+          5
+        ],
+        [
+          "void at::native::elementwise_kernel<(int)128, (int)2, void at::native:",
+          5
+        ],
+        [
+          "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4",
+          4
+        ],
+        [
+          "void geqr2_smem<float, float, (int)8, (int)5, (int)5>(int, int, T1 *, ",
+          2
+        ],
+        [
+          "void at::native::triu_tril_kernel<float, int, (bool)1, (int)2, (bool)0",
+          2
+        ],
+        [
+          "void orgqr_step1_kernel<float, (int)5, (int)3>(int, int, int, T1 *, in",
+          2
+        ],
+        [
+          "void larft_vtv_32<float, (int)128>(long long, long long, const T1 *, u",
+          2
+        ],
+        [
+          "void larft_T_32<float, (int)256>(int, T1 *, int, const T1 *)",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_fastica_N1024_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_fastica_N1024_B1_winB.csv"
+      ],
+      "seconds": 10.36543070001062,
+      "model_seq_steps": 650
+    },
+    {
+      "experiment": "EXP-CR-003",
+      "algorithm": "nmf",
+      "N": 1024,
+      "B": 1,
+      "mode": "loop-window",
+      "K_kernels_per_iter": 15,
+      "setup_kernels": 6,
+      "iterations": 50,
+      "census_kernels": 756,
+      "window_A": {
+        "fp32_fma": 8064000.0,
+        "fp32_add": 745216.0,
+        "fp32_mul": 960064.0,
+        "fp32_total": 9769280.0,
+        "int_total": 11986416.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 1233408.0,
+        "dram_words": 308352.0,
+        "n_kernels": 21
+      },
+      "window_B": {
+        "fp32_fma": 15570944.0,
+        "fp32_add": 1438208.0,
+        "fp32_mul": 1676416.0,
+        "fp32_total": 18685568.0,
+        "int_total": 20251872.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 2252032.0,
+        "dram_words": 563008.0,
+        "n_kernels": 30
+      },
+      "window_B_first_half": {
+        "fp32_fma": 7785472.0,
+        "fp32_add": 719104.0,
+        "fp32_mul": 838208.0,
+        "fp32_total": 9342784.0,
+        "int_total": 10125936.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 1123328.0,
+        "dram_words": 280832.0,
+        "n_kernels": 15
+      },
+      "window_B_second_half": {
+        "fp32_fma": 7785472.0,
+        "fp32_add": 719104.0,
+        "fp32_mul": 838208.0,
+        "fp32_total": 9342784.0,
+        "int_total": 10125936.0,
+        "fp_misc": 0.0,
+        "dram_bytes": 1128704.0,
+        "dram_words": 282176.0,
+        "n_kernels": 15
+      },
+      "fp32_per_iter": 9342784.0,
+      "fp32_setup": 426496.0,
+      "fp32_total_per_invocation": 467565696.0,
+      "dram_words_per_iter": 281504.0,
+      "dram_words_per_invocation": 14075200.0,
+      "to_pred_macs": 86912000.0,
+      "ratio_fp_actual_vs_predicted": 5.379759941089838,
+      "to_pred_mem_words": 74240.0,
+      "ratio_mem_actual_vs_predicted": 189.5905172413793,
+      "kernel_names_B": [
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::Bin",
+          8
+        ],
+        [
+          "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float",
+          6
+        ],
+        [
+          "ampere_sgemm_32x32_sliced1x4_nt",
+          4
+        ],
+        [
+          "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUD",
+          4
+        ],
+        [
+          "void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)4,",
+          2
+        ],
+        [
+          "ampere_sgemm_32x32_sliced1x4_tn",
+          2
+        ],
+        [
+          "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)8",
+          2
+        ],
+        [
+          "ampere_sgemm_32x32_sliced1x4_nn",
+          2
+        ]
+      ],
+      "csv": [
+        "data\\ncu_profiles\\v1\\ncu_nmf_N1024_B1_winA.csv",
+        "data\\ncu_profiles\\v1\\ncu_nmf_N1024_B1_winB.csv"
+      ],
+      "seconds": 8.151004799990915,
+      "model_seq_steps": 700
+    }
+  ]
+}

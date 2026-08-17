@@ -139,7 +139,7 @@ Observation 5 above misread the direction of two algorithms: filterbank_32ch on 
 **Date**: 2026-08-17 (EDT)
 **Researcher**: Muntaser Syed
 **Type**: hardware (Nsight Compute instruction counts, RTX 4090 Laptop GPU)
-**Status**: planned
+**Status**: completed 2026-08-17 (run_ncu_v1.py, 19:58 UTC)
 
 ### Motivation
 Reviewer AQaA asked whether the split-radix correction is effective only at
@@ -182,6 +182,13 @@ to the 30% Cooley-Tukey overprediction.
 3. Paste parser output here; save `data/ncu_profiles/scaling/fft_N*_B1.csv` and
    `data/camera_ready/exp_cr_002_fft_scaling.json`
 
+### Addendum 2026-08-17 (protocol change before the run)
+Implemented as part of `run_ncu_v1.py` (shared driver with EXP-CR-003) instead of
+a separate PowerShell script: `python run_ncu_v1.py --only fft` profiles the five
+sizes in full and prints measured / split-radix and measured / Cooley-Tukey
+ratios; raw CSVs go to `data/ncu_profiles/v1/`, entries to
+`data/ncu_profiles/ncu_summary_v1.json` (v0 `ncu_summary.json` untouched).
+
 ### Environment
 - **Hardware**: RTX 4090 Laptop GPU
 - **Software**: Windows, Python 3.12, PyTorch (version recorded), Nsight Compute
@@ -189,8 +196,22 @@ to the 30% Cooley-Tukey overprediction.
 - **Git commit**: TBD at run
 - **Seeds**: not applicable (deterministic instruction counts)
 
-### Results / Observations / Interpretation
-[to be filled after run]
+### Results / Observations / Interpretation (EXP-CR-002)
+Console: `data/ncu_profiles/ncu_v1_console.txt`; entries in `ncu_summary_v1.json` (experiment EXP-CR-002); raw CSVs `data/ncu_profiles/v1/ncu_fft_N*_B1.csv`. Control: N = 4096 reproduces F-001 exactly (173,055 FP32 instructions, 2 kernels).
+
+| N | kernels | FP32 measured | split-radix 4N log2 N - 6N + 8 | ratio | Cooley-Tukey 5N log2 N | ratio | cuFFT plan (kernel) |
+|---|---|---|---|---|---|---|---|
+| 256 | 2 | 6,383 | 6,664 | 0.958 | 10,240 | 0.623 | vector_fft_r2c<256, EPT 16> |
+| 1024 | 2 | 36,799 | 34,824 | 1.057 | 51,200 | 0.719 | vector_fft_r2c<1024, EPT 16> |
+| 4096 | 2 | 173,055 | 172,040 | 1.006 | 245,760 | 0.704 | vector_fft_r2c<4096, EPT 16> |
+| 16384 | 2 | 536,063 | 819,208 | 0.654 | 1,146,880 | 0.467 | vector_fft_symm_r2c<16384, EPT 32> |
+| 65536 | 4 | 2,517,018 | 3,801,096 | 0.662 | 5,242,880 | 0.480 | regular_fft_factor<128> x <256> + postprocess |
+
+(The second kernel at every N is PyTorch's conjugate-symmetry copy for the real-input transform; it executes no FP32 instructions.) FFMA share of FP32 instructions: 24 to 26% for N <= 16384, 34% at 65536.
+
+Observations: H1 holds for N = 256 to 4096 (0.96 to 1.06); it does not extend to N >= 16384, where cuFFT changes plan (EPT-32 symmetric real-input kernel at 16384; two-pass 128 x 256 factorization at 65536) and executes 0.65 to 0.66x the split-radix count, i.e. 0.47 to 0.48x Cooley-Tukey. H2 (a rise at N = 256 from fixed per-kernel cost) is not observed; the ratio at 256 is 0.96. H3 holds: the plan change is a step, at the sizes where the kernel family changes.
+
+Interpretation for the paper: the split-radix count is validated at every size where cuFFT runs a single-kernel radix-16 plan (N <= 4096, within 6%); Cooley-Tukey over-counts by 1.4 to 1.6x there. At N >= 16384 cuFFT executes 35% fewer FP32 instructions than even split-radix, so the analytical count is a bound the library beats; the model keeps the analytical formula and this is stated with the numbers. It also explains part of fft's 1.6 to 2x energy over-prediction at large N (F-020).
 
 ---
 
@@ -199,7 +220,7 @@ to the 30% Cooley-Tukey overprediction.
 **Date**: 2026-08-17 (EDT)
 **Researcher**: Muntaser Syed
 **Type**: hardware (Nsight Compute instruction counts, RTX 4090 Laptop GPU)
-**Status**: planned
+**Status**: completed 2026-08-17 (run_ncu_v1.py, 19:58 UTC; one-iteration windows for Python loops)
 
 ### Motivation
 Reviewer AQaA asked why only 23 of 37 algorithms were profiled and which ones.
@@ -242,14 +263,52 @@ count within ~20%.
 2. Run for the 14 algorithms; note per-algorithm wall time and any timeout
 3. Regenerate Fig. 3 (NCU validation) with all profiled algorithms
 
+### Addendum 2026-08-17 (protocol change before the run)
+Implemented as `run_ncu_v1.py`. Python-loop algorithms are profiled with two
+kernel windows instead of in full, using the EXP-CR-005 census (K kernels per
+iteration, s setup kernels): window A = `--launch-skip 0 --launch-count s+K`,
+window B = `--launch-skip s+K --launch-count 2K`; per-iteration = B/2 (any
+window of length K inside the loop sums exactly one period, so alignment does
+not matter), per-invocation = iterations x per-iteration + max(A - per-iteration, 0);
+the two halves of B are compared as a periodicity check. music, esprit, dwt_db4
+and the torchaudio IIR are profiled in full. Same NCU metrics, harness
+(profile_single.py) and parser as F-001. Output `ncu_summary_v1.json` holds the
+23 v0 entries (tagged) plus the new ones.
+
 ### Environment
 - **Hardware**: RTX 4090 Laptop GPU
 - **Software**: Windows, Python 3.12, PyTorch, Nsight Compute 2024.1.0
 - **Git commit**: TBD at run
 - **Seeds**: not applicable
 
-### Results / Observations / Interpretation
-[to be filled after run]
+### Results
+Console: `data/ncu_profiles/ncu_v1_console.txt`; entries in `ncu_summary_v1.json` (experiment EXP-CR-003); raw CSVs under `data/ncu_profiles/v1/`. Windows: window-B halves identical for lms, nlms, rls, apa, kalman, particle, nmf; within 0.02% for ekf and ukf; within 2% for fastica (data-dependent), so the one-iteration method samples exact periods.
+
+| algorithm | N | mode | FP32 per invocation (measured / est.) | model MACs | ratio | DRAM ratio | dominant kernels |
+|---|---|---|---|---|---|---|---|
+| dwt_db4 | 4096 | full, 2 kernels | 36,858 | 32,768 | 1.13 | 1.8 | cudnn conv2d_grouped_direct |
+| iir_butter4 (torchaudio) | 4096 | full, 8 kernels | 41,010 | 53,248 | 0.77 | 4.9 | iir_cu_kernel + conv2d |
+| music | 1024 | full, 37 kernels | 11,844,088 | 3,207,475 | 3.69 | 19.1 | cgemm_largek, cuSOLVER eigensolver |
+| esprit | 1024 | full, 44 kernels | 2,061,377 | 2,102,382 | 0.98 | 10.4 | ormqr, elementwise |
+| lms | 4096 | 7 kernels/iter x 200 | 77,200 (386/iter) | 19,400 | 3.98 | | reduce, elementwise (32-vectors) |
+| nlms | 4096 | 12 x 200 | 142,200 (711/iter) | 26,400 | 5.39 | | reduce, elementwise |
+| rls | 4096 | 13 x 100 | 691,224 (6,902/iter) | 633,700 | 1.09 | | gemvx, gemmk1 |
+| apa_p4 | 4096 | 28 x 100 | 16,155,400 (161,554/iter) | 84,100 | 192 | | sgemm 32x32 tiles, splitK reduce, gemvNSP (4x4 solve) |
+| kalman | 4096 | 31 x 200 | 16,401,400 (82,007/iter) | 31,200 | 526 | | gemmSN 256-thread tiles, getrf_pivot (4x4 inverse) |
+| ekf | 4096 | 39 x 200 | 16,424,800 (82,124/iter) | 41,600 | 395 | | same as kalman + sin/cos |
+| ukf | 4096 | 54 x 100 | 1,716,564 (17,166/iter) | 53,460 | 32.1 | | gemmk1, getrf_wo_pivot (Cholesky path) |
+| particle_1k | 4096 | 21 x 200 | 47,727,824 (237,673/iter) | 5,561,000 | 8.58 | | Philox randn, exp, cub scan, reduce |
+| fastica | 1024 | 27 x 50 | 263,435,100 (5,268,702/iter) | 3,000,600 | 87.8 | | gemmSN tiles, geqr2/orgqr/larft (QR) |
+| nmf | 1024 | 15 x 50 | 467,565,696 (9,342,784/iter) | 86,912,000 | 5.38 | | ampere_sgemm 32x32 sliced + splitK reduce (k = 8) |
+
+### Observations
+1. H1 (closed-form per-step arithmetic matches within ~20%) holds only for rls (1.09); lms and nlms execute 4 to 5x the arithmetic count because every kernel on a 32-vector carries reduction and per-thread overhead instructions; the algorithms with tiny-matrix library calls inside the loop (4x4 inverse/solve/Cholesky, QR on 4 to 16 columns) execute 30x to 530x the arithmetic count because cuSOLVER/cuBLAS kernels run fixed padded tiles (gemmSN 256-thread tiles, 32x32 sgemm tiles with split-K reduction, getrf on a 32-wide panel) whatever the 4x4 problem size. This is a fixed instruction cost per launch, not a function of the arithmetic.
+2. H2 holds for esprit (0.98) and the fused IIR (0.77) and dwt_db4 (1.13); music is 3.7x (cuSOLVER eigensolver plus spectrum search), the same implementation-dependent class as svd/pca (F-009). particle (8.6x) and nmf (5.4x) sit between: real work the analytical count under-counts (Box-Muller normal sampling, exp, prefix scan; skinny k = 8 matmuls run as padded 32x32 tiles).
+3. Energetically the tiny-matrix excess is irrelevant on the 4090: kalman's 16.4M FP32 instructions cost about 16.4M x 5000 TO x 13.6 fJ = 1.1 mJ against 6,804 commands x 234 uJ = 1.6 J of launch cost (0.07%). The excess is a per-launch fixed cost and the launch term absorbs it; that is why alpha_o works and why T_c does not matter in the sequential regime. On the A100 (30 uJ per command) the same excess is visible for fastica, nmf and particle (F-020/EXP-CR-006 under-predictions 0.16, 0.15, 0.47), which are compute-count residuals, consistent with these ratios.
+4. DRAM traffic is 2 to 19x the analytical T_m for every full profile here, as for the v0 set (F-001): eager execution materializes intermediates.
+
+### Interpretation
+T_c stays analytical (mathematical operation counts). Fig. 3 (NCU validation) becomes complete (37 of 37) with two populations stated plainly: analytically tractable kernels near their tile sizes match within 2 to 13% (FFT <= 4096, direct DFT, convolutions, matmul, esprit, rls, dwt, fused IIR); tiny-matrix library calls inside Python loops execute 30 to 530x the arithmetic count as fixed padded work per launch, which the launch term prices and which costs about 0.1% of the energy in that regime on the laptop. music joins svd/pca as implementation-dependent factorizations. No change to the model's coefficients from this experiment; the EXP-CR-006 b-all numbers stand.
 
 ---
 
