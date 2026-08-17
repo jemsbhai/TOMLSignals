@@ -70,6 +70,10 @@ than overwritten (`analyze_results.py` / `analyze_results_v1.py`, `run_ncu_profi
 `run_ncu_v1.py`, `get_seq_steps` / `get_seq_steps_v1`). Corrections to earlier findings are recorded as
 dated errata in findings.md, never by editing the original entry.
 
+## License
+
+MIT (see LICENSE). If you use the code or data, please cite the MLSP 2026 paper above.
+
 ## Related
 
 TOML (the framework): M. Syed, M. Silaghi, S. Abujar, S. Akter Khushbu, "TOML Transistor Operations
