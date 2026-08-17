@@ -360,3 +360,100 @@ rel_alg is indistinguishable from rel (all metrics within 1 point). By regime, i
 Switching the estimator is not the fix: it moves the error between regimes without shrinking the spread, and its A100 gain is an artifact removable by correcting the IIR launch count. Keep the v0 unweighted NNLS (unchanged from the accepted paper), report the LOAO ranges of every coefficient in Table 3, and fix the launch counts: (i) correct KERNELS_PER_ITER for the IIR fallback and validate all entries with a profiler census; (ii) count library-internal launches (cuSOLVER svd, pca, eigendecomposition in music and esprit) in S_o, which the svd/pca residual per launch justifies quantitatively and which reinterprets alpha_o as a per-launch GPU idle cost rather than a Python-interpreter cost. The Part 3 spread is the paper's honest accuracy statement: the constant-energy-per-operation assumption holds within about 3x for high-throughput kernels and fails by orders of magnitude for sort, iterative factorization and serial code; that sentence, with the numbers, replaces "points cluster tightly along the identity line".
 
 ---
+
+## EXP-CR-005: Kernel-Launch Census for Every Benchmarked Configuration
+
+**Date**: 2026-08-17 (EDT)
+**Researcher**: Muntaser Syed
+**Type**: hardware (torch.profiler kernel counts on the RTX 4090; no energy measured)
+**Status**: completed 2026-08-17 (nsys backend; 178 rows + 10 smoke rows, all 264 unique configurations covered)
+
+### Motivation
+F-020: the model's launch counts S_o come from a hand-derived table
+(KERNELS_PER_ITER, "derived from source code analysis") that is wrong by about
+4.4x for the IIR fallback, and library-internal launches (cuSOLVER svd/pca,
+eigendecomposition in music/esprit) are not counted at all although the svd/pca
+residual per launch (396 to 457 uJ) equals alpha_o (385 uJ). Every launch count
+the model uses should be measured, the same way NCU measured the instruction
+counts (F-001, F-002).
+
+### Hypotheses
+H1. For the ten Python-loop algorithms (lms, nlms, rls, apa_p4, kalman, ekf, ukf,
+particle_1k, fastica, nmf) and mdct_audio, the profiler kernel count per outer
+iteration matches KERNELS_PER_ITER within +-20%; for iir_butter4 (fallback) it is
+about 22 per sample, not 5.
+H2. svd, pca, music and esprit launch hundreds of kernels per call (svd 137 and
+pca 166 at N = 1024 per F-001 NCU) with counts that vary slowly with N; the
+other parallel algorithms launch at most about 15 kernels per call, so a
+per-launch term is negligible (< 5% of energy) for them at the paper's batch sizes.
+H3. Kernel counts are deterministic across repeats except possibly cuSOLVER
+iterative routines (convergence-dependent), and independent of B for library ops.
+H4. lstm_denoiser at B = 1 launches a small fixed number of kernels (cuDNN fused
+recurrence), confirming its per-step cost is serial execution, not launches.
+
+### Independent variables
+- Every (algorithm, N, B) configuration present in the 4090 or A100 data set
+  (union), all algorithms; iir_butter4 profiled on both the torchaudio path
+  (4090) and the forced Python fallback (A100 configs)
+
+### Dependent variables
+- CUDA kernel launches, memcpy and memset counts per invocation (torch.profiler,
+  CUDA activity), top kernel names by count; model S_o from get_seq_steps;
+  ratio census / model; implied kernels per outer iteration
+
+### Control conditions
+- Same setup_fn / run_fn / defaults as the harness (ALL_ALGORITHMS), 3 warmup
+  calls, one profiled call after torch.cuda.synchronize(); repeat = 2 for svd,
+  pca, music, esprit to check determinism
+- Configuration list read from the two all_results.csv files (SHA-256 recorded)
+
+### Protocol
+1. `python census_kernels.py` from the repo root (resumable: appends rows to
+   data/camera_ready/exp_cr_005_kernel_census.csv; use --algs to restrict)
+2. Paste the summary tables printed at the end
+3. Outputs: exp_cr_005_kernel_census.csv, exp_cr_005_kernel_census.json
+
+### Environment
+- **Hardware**: RTX 4090 Laptop GPU
+- **Software**: Windows, Python 3.12, PyTorch (version recorded), torch.profiler / Kineto
+- **Git commit**: TBD at run
+- **Seeds**: not applicable (kernel counts)
+
+### Addendum 2026-08-17 (before the run)
+torch 2.6.0+cu124 (Windows wheel) reports `supported_activities() = {CPU}`: Kineto is built without CUPTI, so torch.profiler cannot see kernels on this machine (its "Self CUDA" column is op-level CUDA-event timing, not launches). Backend switched to Nsight Systems 2023.4.4 (`nsys profile --trace=cuda --capture-range=cudaProfilerApi` per configuration in a child process; counts from `nsys stats --report cuda_gpu_kern_sum` and `cuda_gpu_mem_time_sum`). Same protocol otherwise (harness setup, 3 warmups, one bracketed invocation). The census script auto-selects nsys when torch.profiler lacks CUDA activity.
+
+### Results
+Console: `data/camera_ready/exp_cr_005_console.txt` (+ `exp_cr_005_smoke.txt` for fft/svd); CSV/JSON: `exp_cr_005_kernel_census.{csv,json}`. Backend nsys 2023.4.4; torch 2.6.0+cu124; RTX 4090 Laptop GPU. Every configuration was measured (no ERROR rows); repeats identical for svd, pca, music, esprit, fastica, nmf, particle.
+
+**A. Python-loop algorithms, kernels per outer iteration, table (KERNELS_PER_ITER) vs census:**
+
+| algorithm | table | census kernels/iter | ratio | memcpy per iter | outer iters | model S_o | census kernels |
+|---|---|---|---|---|---|---|---|
+| lms | 7 | 7.0 | 1.00 | 0 | 200 | 1400 | 1401 |
+| nlms | 11 | 12.0 | 1.09 | 0 | 200 | 2200 | 2401 |
+| rls | 12 | 13.0 | 1.09 | 0 | 100 | 1200 | 1304 |
+| apa_p4 | 15 | 28.0 | 1.87 | 4 | 100 | 1500 | 2801 |
+| kalman | 15 | 31.0 | 2.07 | 3 | 200 | 3000 | 6203 |
+| ekf | 22 | 39.0 | 1.77 | 3 | 200 | 4400 | 7803 |
+| ukf | 43 | 54.1 | 1.26 | 11 | 100 | 4300 | 5406 |
+| particle_1k | 20 | 21.0 | 1.05 | 0 | 200 | 4000 | 4203 |
+| fastica | 13 | 27.1 | 2.08 | 0 | 50 | 650 | 1354 |
+| nmf | 14 | 15.1 | 1.08 | 0 | 50 | 700 | 756 |
+| mdct_audio | 11 | 11.0 | 1.00 | 0 | 7/31/50 | 77/341/550 | 77/341/550 |
+| iir_butter4 fallback (A100 configs) | 5 | 17.0 at B=1, 22.0 per sample at B=2 | 3.4 / 4.4 | 5 per sample at B=1, 0 at B=2 | B*N | 5*B*N | 17411 (N=1024, B=1), 69635 (4096, 1), 274647 (16384, 1); 22531 (1024, 2), 90115 (4096, 2) |
+
+Counts are identical across N for every Python-loop algorithm (fixed iteration counts), so S_o does not depend on N except for mdct and the IIR fallback. IIR fallback: at B = 1 the five per-sample slice assignments (y[:, n] and four s[:, i]) are executed as 4-byte device-to-device memcpys, at B = 2 as copy kernels; kernels + memcpys = 22 per sample at both B, exactly the source-code count in F-020.
+
+**B. Parallel and fused algorithms, kernels per invocation (min..max over the paper's configurations), memcpy, memset:** jpeg 10..13; pca 166 (11, 3) at all N; svd 245 / 244 / 137 at N = 256 / 512 / 1024 (16, 4); filterbank 1; fir_direct 1; fir_fft 7..9; iir torchaudio 8..9 (1 memcpy); matched 8..10; median 2; savgol 1; wiener 10..11; cnn 10; lstm 6..8 at every N including B = 1 (fused recurrence); transformer 24; esprit 19 (batched B >= 2) or 44 (B = 1, N = 512), 5..7 memcpy; music 16..18 (1 memcpy); periodogram 6..7; welch 7; dct 6..7; direct_dft 1 (1 memset); dst 9..14; dwt 2; fft 2 (3 at N = 16384); hilbert 5..6; stft 3. cuSOLVER changes algorithm for svd at N = 1024 (Householder ormtr/gesvd path with 244 to 245 kernels at N <= 512, batched Jacobi gesvdbj with 137 at N = 1024); pca (pca_lowrank) is a fixed 166-kernel schedule.
+
+### Observations
+1. H1 half holds. Six of twelve table entries are within 10% (lms, nlms, rls, particle, nmf, mdct); ukf is 26% low; apa, kalman, ekf and fastica are about 2x low; the IIR fallback is 3.4x (kernels) or 4.4x (kernels + memcpys) low. The submitted paper's "K ranging from 7 for LMS to 43 for UKF, determined by source code analysis" is 7 to 54 by measurement, and F-013's per-launch overhead spread was computed with the wrong K for four algorithms.
+2. H2 holds: svd (137 to 245), pca (166), esprit (19 to 44), transformer (24) and music (16 to 18) are the launch-heavy parallel algorithms; every other parallel algorithm launches at most 14 kernels per call.
+3. H3 holds: counts are deterministic across repeats and independent of B for library ops (svd, pca, music) and of N for Python loops; svd's count depends on N through cuSOLVER's algorithm choice.
+4. H4 holds: cuDNN LSTM launches 6 to 8 kernels at every N at B = 1; its per-step cost is serial execution inside those kernels, not launches.
+5. Per-command cost check on the 4090 (F-020 numbers, census counts): svd N = 1024 64.4 mJ over 137 + 16 + 4 = 157 GPU commands = 410 uJ each; pca 66.0 mJ over 166 + 11 + 3 = 180 = 367 uJ each; the Python-loop per-launch cost after correcting the counts is 385 uJ x (old S_o / census S_o), i.e. roughly 200 to 385 uJ depending on algorithm. Same order; consistent with one per-command cost for library and Python-issued launches.
+
+### Interpretation
+The dispatch term's inputs were partly wrong (2x for four algorithms, 4x for the IIR fallback that dominates the A100 fit) and incomplete (library launches uncounted). Both are now measured. Next: EXP-CR-006 refits the four-parameter model with census launch counts, in two definitions to be compared on identical folds: (a) census counts for the Python-loop and IIR-fallback algorithms only (S_o = 0 elsewhere, as in the paper), and (b) unified S_o = all GPU commands issued per invocation (kernels + memcpy + memset) for every algorithm, which is the same physics applied without exception. Modeling decision needed before the run: count kernels only, or kernels + memcpy + memset (the IIR B = 1 vs B = 2 result argues for all commands, since a 4-byte D2D copy is a launch with the same latency).
+
+---

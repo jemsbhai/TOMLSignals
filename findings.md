@@ -758,3 +758,24 @@ See LOGBOOK EXP-CR-004 results tables (estimator comparison, Part 3 per-algorith
 This is the physics behind reviewer DHCe's objection: energy per operation on a GPU is a throughput variable. Ranking accuracy is robust to it (22 to 24 / 30 under every fold, estimator and cross-GPU transfer); absolute prediction is not. The 60x spread across FP kernels is itself a measured result of the paper.
 
 ---
+
+## F-021: Measured Kernel-Launch Census: KERNELS_PER_ITER Is 2x Low for Four Algorithms and 4x Low for the IIR Fallback; cuSOLVER Launch Counts per Call
+**Date**: 2026-08-17
+**Status**: Validated (EXP-CR-005, Nsight Systems 2023.4.4 kernel traces on the RTX 4090, one bracketed invocation per configuration after 3 warmups; all 264 (algorithm, N, B, variant) configurations of both GPUs' data sets; deterministic across repeats)
+**Relevant files**: census_kernels.py, data/camera_ready/exp_cr_005_kernel_census.{csv,json}, exp_cr_005_console.txt, shared/to_model.py (KERNELS_PER_ITER), LOGBOOK.md EXP-CR-005
+
+### Observation
+1. Kernels per outer iteration, table vs measured: lms 7 / 7.0; nlms 11 / 12.0; rls 12 / 13.0; particle_1k 20 / 21.0; nmf 14 / 15.1; mdct_audio 11 / 11.0 (within 10%); ukf 43 / 54.1 (+26%); apa_p4 15 / 28.0; kalman 15 / 31.0; ekf 22 / 39.0; fastica 13 / 27.1 (all about 2x); iir_butter4 Python fallback 5 / 22 per sample (17 kernels + 5 device-to-device memcpys at B = 1, 22 kernels at B = 2). Counts do not depend on N for the Python-loop algorithms (fixed iteration counts) and scale exactly with N for the fallback IIR and with frames for mdct. Kalman, EKF, UKF and APA also issue 3, 3, 11 and 4 memcpys per iteration (info flags from cuSOLVER inverse/solve routines).
+2. Library-internal launches per call for parallel algorithms: svd 245 / 244 / 137 at N = 256 / 512 / 1024 (cuSOLVER switches from the Householder ormtr/gesvd path to batched Jacobi gesvdbj at N = 1024), plus 16 memcpys and 4 memsets; pca 166 at every N (+11, +3); esprit 19 (batched, B >= 2) or 44 (B = 1), 5 to 7 memcpys; transformer 24; music 16 to 18. All other parallel algorithms launch 1 to 14 kernels per call (fft 2, direct_dft 1, fir_direct 1, filterbank 1, cnn 10, wiener 10 to 11, dst 9 to 14). cuDNN LSTM at B = 1 launches 6 to 8 kernels at every N.
+3. Per-command cost implied on the 4090 (energies from EXP-CR-004): svd N = 1024 64.4 mJ over 157 commands = 410 uJ each; pca 66.0 mJ over 180 = 367 uJ each; the Python-loop per-launch cost after correcting the counts falls from 385 uJ to roughly 200 to 385 uJ depending on algorithm.
+
+### Significance
+- The submitted paper's dispatch term used launch counts that are 2x low for four of eleven Python-loop algorithms and 4x low for the three A100 IIR points that dominate the A100 alpha_o fit (F-019); the sentence "ranging from 7 for LMS to 43 for UKF, determined by source code analysis" becomes "7 to 54, measured with Nsight Systems".
+- Library-internal launches (cuSOLVER factorizations, eigendecompositions, transformer layers) were not counted at all although they cost the same order per launch as Python-issued launches; svd and pca, the two largest under-predictions in the paper, are quantitatively explained by their launch counts.
+- Launch counts are now a measured input of the model, on the same footing as the NCU-validated instruction counts. The refit (EXP-CR-006) decides between (a) corrected counts for the Python-loop and IIR-fallback algorithms only and (b) a unified S_o that counts every GPU command of every algorithm.
+
+### Errata to earlier findings
+- F-013: the KERNELS_PER_ITER values for apa_p4, kalman, ekf, ukf and fastica were 1.3x to 2.1x low, and iir_butter4 (fallback) was 4.4x low; the qualitative conclusion (launches, not iterations) stands, the "8x to 2.5x" spread was computed with the wrong counts.
+- F-014 / F-010: the A100 alpha_o = 125 uJ/launch was fitted with the 4.4x-undercounted IIR fallback; the population per-launch cost on the A100 is 30 to 55 uJ.
+
+---
