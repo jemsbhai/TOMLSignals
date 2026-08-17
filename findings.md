@@ -666,3 +666,69 @@ The CPU implementation was matched to these parameters (alpha=1.0, spectral radi
 **Implication for the paper**: The UKF implementation is technically a cubature Kalman filter (CKF). This should be noted when describing the algorithm. The energy comparison remains valid because both CPU and GPU execute identical mathematical operations.
 
 ---
+
+## F-017: Paper Submitted to IEEE MLSP 2026
+**Date**: 2026-05-22
+**Evidence**: Submitted via CMT. 6-page paper, double-blind, 8 figures, 3 tables, 11 references. Anonymous code at https://anonymous.4open.science/r/TOMLSignals-8810/.
+**Key results reported**: r²=0.947 (RTX 4090), r²=0.982 (A100 SXM4), 80% head-to-head ranking (24/30) on both GPUs, NCU validation (99.4% split-radix FFT, 99.2% complex MAC), three sequential energy regimes (α_o/α_f = 2.8-6.9×), CPU vs GPU comparison (CPU wins 100% sequential, GPU wins 84/85 parallel).
+**Corrections applied during writing**: Garcia2017 reference was hallucinated and replaced with Bridges2016. Desoli2017 title corrected. 1,190× gap claim replaced with conservative α ratio (3-7×). Head-to-head failure analysis corrected from "5/6 Kalman-UKF" to "4/6 sequential pairs per GPU".
+
+---
+
+## F-018: MLSP 2026 Decision and Reviewer Findings (Camera-Ready Scope)
+**Date**: 2026-08-17
+**Status**: Documented
+**Evidence**: OpenReview decision (accept as poster, published in proceedings); four official reviews (ratings 6, 5, 4, 3; confidences 5, 2, 3, 2). No author rebuttal was submitted.
+
+### Reviewer points and their disposition
+1. DHCe (3, weak reject): r2 across five decades overstates accuracy; 4 parameters on ~130 points with no held-out set; "hardware validated" oversells because NCU compares instruction counts, not energy.
+   - The submitted r2 (0.947 / 0.982) is computed in LINEAR space by v0 fit_four_parameter (sum of squared residuals on raw joules), not on the log-log axes of Fig. 1. The paper never stated the definition. Linear r2 is dominated by the joule-scale points; the reviewer's concern stands in that form.
+   - Disposition: EXP-CR-001 (analyze_cv.py) reports MdAPE, within-1.5x/2x/3x, log-space r2, LOAO / LOCO / leave-one-category-out cross-validation, head-to-head under LOAO, and cross-GPU transfer. Wording of "hardware validation" to be split into two tiers: NCU validates instruction counts (inputs to TO_c); NVML power validates energy predictions.
+2. AQaA (5): why 23 of 37 profiled and which; head-to-head section unclear; Fig. 4 colors; split-radix only at N = 4096?
+   - Profiled (v0 run_ncu_profile.py): fft, direct_dft, dct, dst, dwt_haar, stft, hilbert, fir_direct, fir_fft, wiener, matched_filter, savgol, median, filterbank_32ch, periodogram, welch, svd, pca, cnn_denoiser, lstm_denoiser, transformer_denoiser, jpeg_q50, mdct_audio. Not profiled: lms, nlms, rls, apa_p4, kalman, ekf, ukf, particle_1k, fastica, nmf, music, esprit, dwt_db4, iir_butter4. No technical obstacle recorded.
+   - Disposition: EXP-CR-003 profiles the remaining 14; EXP-CR-002 profiles FFT at N = 256 to 65536; head-to-head subsection rewritten; Fig. 4 solid/dashed pairs recolored.
+3. qq3z (4): novelty over TOML core; missing related work (Latif et al. 2026 TCC; Latif et al. 2025 IEEE Access; Fischer 2025 arXiv:2509.22092); generalization to unseen architectures.
+   - All three references verified live on 2026-08-17 (DOIs 10.1109/TCC.2026.3700971, 10.1109/ACCESS.2025.3554728, 10.48550/arXiv.2509.22092).
+   - Disposition: explicit contributions-beyond-TOML paragraph; cross-GPU transfer analysis in EXP-CR-001; references added.
+4. A6Ww (6): narrow algorithm/hardware set; no action beyond the above.
+
+### Model facts established during triage (for the camera-ready text)
+- alpha_f is identified only by cuDNN LSTM at B = 1 (get_fused_steps); LOAO with LSTM held out cannot estimate alpha_f. Report as a one-exemplar regime.
+- FLAIRS-39 TOML paper DOI: 10.32473/flairs.39.1.141781 (published title "TOML Transistor Operations for Machine Learning: A Physics-Grounded Energy Efficiency Framework"; authors Syed, Silaghi, Abujar, Akter Khushbu).
+- TOMLCloud is under review (CloudCom 2026) and can only be cited as submitted for publication.
+- MLSP camera-ready: 6 pages including references, no extension; upload via OpenReview "Camera Ready Revision"; de-anonymize paper and code repository.
+- Camera-ready experiments are logged in LOGBOOK.md (EXP-CR-001, 002, 003), created 2026-08-17.
+
+---
+
+## F-019: The Reported r2 Reflects the Joule-Scale Points; Least-Squares Coefficients Are Set by One to Three Algorithms
+**Date**: 2026-08-17
+**Status**: Validated (EXP-CR-001, analyze_cv.py, same data and design matrix as the submission; v0 coefficient check passed)
+**Relevant files**: analyze_cv.py, data/camera_ready/exp_cr_001_cv_results.json, exp_cr_001_per_algorithm.csv, exp_cr_001_console.txt, LOGBOOK.md EXP-CR-001
+
+### Observation
+The four-parameter model's in-sample r2 of 0.947 (RTX 4090) and 0.982 (A100) is computed on raw joules and is dominated by the largest-energy configurations. Scale-free metrics on the same fit: median absolute percentage error 44.3% (4090) and 68.0% (A100); 69.6% and 54.8% of configurations within 2x of measurement; 80.4% and 74.6% within 3x; log-space r2 of -0.19 and +0.14. Head-to-head ranking is 24/30 on both GPUs, as reported.
+
+### Evidence
+| Metric | 4090 in-sample | 4090 LOAO | A100 in-sample | A100 LOAO |
+|---|---|---|---|---|
+| r2 linear | 0.947 | 0.731 | 0.982 | 0.654 |
+| r2 log10 | -0.19 | -0.25 | 0.14 | 0.06 |
+| MdAPE | 44.3% | 49.4% | 68.0% | 76.2% |
+| within 2x | 69.6% | 60.9% | 54.8% | 47.6% |
+| head-to-head | 24/30 | 22/30 | 24/30 | 22/30 |
+
+Leave-one-configuration-out is indistinguishable from in-sample (MdAPE 45.2 / 68.1, head-to-head 24/30 on both), so the gap is not overfitting. Coefficient range across the 37 leave-one-algorithm-out folds: 4090 alpha_c 5.5 to 13.7 fJ/TO (in-sample 13.6; minimum when transformer_denoiser is held out), alpha_m 58 to 232 fJ/TO (in-sample 72; maximum when the transformer is held out); A100 alpha_o 55 to 126 uJ/launch (in-sample 125; minimum when the three IIR Python-fallback points are held out). Consequently every A100 adaptive and estimation algorithm is overpredicted 2 to 5x (lms 380%, nlms 286%, rls 280%, ukf 173%, ekf 138%, apa 130%, kalman 102%). Coefficients transferred from the other GPU predict a GPU's typical configuration better than its own fit (A100 alpha_c, alpha_m on the 4090 with alpha_o, alpha_f refit: MdAPE 37.0%, 74% within 2x, versus 44.3% and 69.6% for the 4090's own fit).
+
+A fat tail of algorithms is 10x to 300x underpredicted on both GPUs independent of the estimator: median (torch.median sorts each window; NCU shows 35.3M integer instructions where the TO model counts 4.0M TOs of comparisons), svd, pca, music and esprit (cuSOLVER iterative factorizations; 137 and 166 kernels per svd and pca call), iir_butter4 on the 4090 (fused kernel outside the alpha_f scope of F-014), and filterbank_32ch on the 4090 (unexplained: NCU FP ratio 1.02 at B = 1). direct_dft is 3 to 4x overpredicted on both GPUs although its instruction count matches NCU to 99.2%.
+
+### Significance
+- The accuracy claims in the submitted paper (r2 as the headline; "points cluster tightly along the identity line across five orders of magnitude") must be replaced by the error distribution above. Reviewer DHCe's objection is confirmed in substance, though the reported r2 was linear-space, not log-log.
+- Unweighted linear least squares over five decades of energy yields coefficients that describe one to three algorithms rather than the population; a relative-error weighted NNLS keeps the linear physical model and gives each configuration equal weight (to be evaluated in EXP-CR-004 before any change to the paper).
+- The three qualitative results (three sequential regimes, CPU vs GPU regimes, split-radix and complex-MAC corrections) and the ranking accuracy do not depend on this finding.
+
+### Errata to earlier findings
+- F-014 reported r2 improvements for the 4-parameter model on both GPUs; those r2 values are linear-space and remain correct as computed, but the per-LSTM error improvements there (3.5% to 4.2% in-sample) are in-sample values for the algorithm that alone identifies alpha_f; the LOAO error for LSTM is 92% and 90%.
+- F-017 lists r2 = 0.947 / 0.982 as key results; the values are correct, the interpretation is superseded by this finding.
+
+---
