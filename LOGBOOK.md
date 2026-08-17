@@ -457,3 +457,115 @@ Counts are identical across N for every Python-loop algorithm (fixed iteration c
 The dispatch term's inputs were partly wrong (2x for four algorithms, 4x for the IIR fallback that dominates the A100 fit) and incomplete (library launches uncounted). Both are now measured. Next: EXP-CR-006 refits the four-parameter model with census launch counts, in two definitions to be compared on identical folds: (a) census counts for the Python-loop and IIR-fallback algorithms only (S_o = 0 elsewhere, as in the paper), and (b) unified S_o = all GPU commands issued per invocation (kernels + memcpy + memset) for every algorithm, which is the same physics applied without exception. Modeling decision needed before the run: count kernels only, or kernels + memcpy + memset (the IIR B = 1 vs B = 2 result argues for all commands, since a 4-byte D2D copy is a launch with the same latency).
 
 ---
+
+## EXP-CR-006: Refit of the Four-Parameter Model with Measured Launch Counts
+
+**Date**: 2026-08-17 (EDT)
+**Researcher**: Muntaser Syed
+**Type**: computational (existing energy measurements + EXP-CR-005 census; no new GPU runs)
+**Status**: completed 2026-08-17 (run at 19:39 UTC)
+
+### Motivation
+F-021: the model's launch counts were 2x low for four Python-loop algorithms,
+4.4x low for the IIR fallback that dominates the A100 alpha_o fit, and zero for
+library-internal launches (svd 137 to 245, pca 166, esprit 19 to 44,
+transformer 24, music 16 to 18 per call) although svd and pca residuals imply
+the same per-launch cost as Python-issued launches. Refit with measured counts
+and decide the S_o definition for the camera-ready.
+
+### Hypotheses
+H1. With census counts for the Python-loop and IIR-fallback algorithms only
+(variant a), the A100 alpha_o falls from 125 to 30 to 60 uJ/launch, the A100
+python-loop MdAPE falls from 134% to below 50%, the 4090 python-loop error
+changes by less than 10 points, and head-to-head stays at 24/30 or better.
+H2. With a unified S_o counting every GPU command of every algorithm (variant b),
+svd and pca move from about 99% APE (30x to 100x under) to within 2x on both
+GPUs, esprit and music improve, alpha_o stays within 1.5x of variant a, and the
+batched parallel algorithms' predictions change by less than 5% (their launch
+share is negligible), so within-2x rises by roughly the svd/pca/esprit share of
+the data (5 to 10 points).
+H3. With corrected counts alpha_o(4090) / alpha_o(A100) is 5 to 8 (host-
+dependent per-launch cost) and alpha_o / alpha_f on the A100 is about 1 (not 2.8),
+while on the 4090 it stays between 4 and 7.
+H4. Counting kernels + memcpy + memset fits at least as well as kernels only and
+removes the B-dependence of the IIR fallback per-sample count.
+
+### Independent variables
+- S_o definition: v0 (must reproduce EXP-CR-001); a-kernels; a-all; b-kernels;
+  b-all (a = census counts only where v0 had S_o > 0; b = unified, every
+  algorithm; kernels vs kernels + memcpy + memset)
+- Fold scheme: in-sample, LOAO, LOCO, leave-one-category-out; cross-GPU full
+  transfer and keep-c,m-refit-o,f
+
+### Dependent variables
+- Same metric set as EXP-CR-001; coefficients with LOAO ranges; per-algorithm
+  MdAPE and signed ratio; launch-term share of predicted energy by regime
+
+### Control conditions
+- Estimator: v0 unweighted NNLS (F-020 decision); data and design identical to
+  EXP-CR-001 except the S_o column; census values from repeat 0 (repeats identical)
+- Regime labels for the by-regime tables are the v0 labels in every variant
+
+### Protocol
+1. `python refit_launch_census.py` from the repo root
+2. Paste console; save data/camera_ready/exp_cr_006_refit.json and console
+3. Decide the S_o definition and record it in findings.md
+
+### Environment
+- **Hardware**: analysis only
+- **Software**: Windows, Python 3.12, numpy / scipy
+- **Git commit**: 762a68241df53923de9a73084d12ffe597cdf0fc (working tree dirty at run: refit_launch_census.py, LOGBOOK.md uncommitted)
+- **Seeds**: none
+
+### Results
+Console: `data/camera_ready/exp_cr_006_console.txt`; JSON: `exp_cr_006_refit.json`. Both `[control]` lines reproduce EXP-CR-001 (44.3 / 0.9467 / 24-30; 68.0 / 0.9823 / 24-30). Census rows used: 160 (repeat 0). No configuration lacked a census row.
+
+**Coefficients (in-sample [LOAO min, max]):**
+
+| | 4090 v0 | 4090 a-all | 4090 b-kernels | 4090 b-all | A100 v0 | A100 a-all | A100 b-kernels | A100 b-all |
+|---|---|---|---|---|---|---|---|---|
+| alpha_c fJ/TO | 13.6 [5.5, 13.7] | 13.6 | 13.6 | 13.6 [5.5, 13.7] | 15.2 [7.6, 15.3] | 15.2 | 15.2 | 15.2 [7.6, 15.3] |
+| alpha_m fJ/TO | 71.8 [58, 232] | 71.9 | 69.9 | 70.1 [56, 230] | 184.3 [164, 323] | 184.5 | 184.1 | 184.2 [163, 323] |
+| alpha_o uJ/cmd | 385.4 [364, 401] | 233.7 [226, 248] | 262.3 [256, 281] | 233.8 [227, 248] | 125.2 [55, 126] | 29.5 [29.5, 31.8] | 38.2 [36.3, 38.2] | 29.5 [29.5, 31.9] |
+| alpha_f uJ/step | 55.7 | 55.7 | 55.6 | 55.6 | 45.3 | 45.3 | 45.3 | 45.3 |
+| alpha_o / alpha_f | 6.9 | 4.2 | 4.7 | 4.2 | 2.8 | 0.65 | 0.84 | 0.65 |
+
+alpha_c, alpha_m and alpha_f are unchanged by the S_o definition to three digits (the launch term's median share of predicted energy for batched parallel algorithms is 4.5% on the 4090 and 0.3% on the A100 under b-*). a-kernels equals b-kernels and a-all equals b-all on alpha_o to 0.1 uJ.
+
+**Metrics, in-sample | LOAO:**
+
+| | 4090 v0 | 4090 a-all | 4090 b-kernels | 4090 b-all | A100 v0 | A100 a-all | A100 b-kernels | A100 b-all |
+|---|---|---|---|---|---|---|---|---|
+| MdAPE % | 44.3 / 49.4 | 33.5 / 44.9 | 24.9 / 32.3 | 26.6 / 33.5 | 68.0 / 76.2 | 19.9 / 30.5 | 31.1 / 37.5 | 19.9 / 30.5 |
+| MAPE % | 53.3 / 60.1 | 47.1 / 53.7 | 40.6 / 47.3 | 40.8 / 47.4 | 93.5 / 100.2 | 41.8 / 47.2 | 45.1 / 50.3 | 41.4 / 46.9 |
+| p90 APE % | 99.4 | 99.4 | 91.3 | 92.0 | 261 | 98.6 | 93.0 | 92.4 |
+| within 1.5x | 39.9 / 31.9 | 50.0 / 44.2 | 58.0 / 52.2 | 55.1 / 50.0 | 34.9 / 26.2 | 59.5 / 53.2 | 57.9 / 52.4 | 59.5 / 54.0 |
+| within 2x | 69.6 / 60.9 | 69.6 / 60.9 | 77.5 / 70.3 | 77.5 / 70.3 | 54.8 / 47.6 | 73.0 / 68.3 | 76.2 / 71.4 | 73.0 / 68.3 |
+| within 3x | 80.4 / 78.3 | 80.4 / 78.3 | 87.7 / 84.8 | 87.0 / 84.8 | 74.6 / 71.4 | 84.9 / 81.7 | 84.9 / 81.7 | 84.9 / 81.7 |
+| r2 linear | 0.947 / 0.731 | 0.970 / 0.758 | 0.972 / 0.756 | 0.971 / 0.757 | 0.982 / 0.654 | 0.992 / 0.917 | 0.992 / 0.919 | 0.992 / 0.916 |
+| r2 log10 | -0.19 / -0.25 | -0.18 / -0.24 | 0.68 / 0.62 | 0.67 / 0.62 | 0.14 / 0.06 | 0.22 / 0.15 | 0.58 / 0.52 | 0.56 / 0.49 |
+| geo mult err | 2.95 / 3.30 | 2.80 / 3.12 | 1.77 / 1.97 | 1.78 / 1.98 | 2.48 / 2.77 | 2.03 / 2.22 | 1.81 / 1.97 | 1.79 / 1.96 |
+| head-to-head | 24 / 22 | 26 / 24 | 27 / 25 | 27 / 25 | 24 / 22 | 22 / 20 | 22 / 20 | 22 / 20 |
+
+LOCO is within 1.5 points of in-sample for every variant. Leave-one-category-out b-all: 4090 MdAPE 36.6, within 2x 59%, H2H 24; A100 35.7, 64%, 21.
+
+**By regime (v0 labels), in-sample MdAPE / within 2x:** 4090 parallel: v0 51.9 / 55% -> b-all 42.5 / 67%; python-loop 31.9 / 100% -> 8.7 / 100%; fused 3.9 -> 3.6. A100 parallel 36.6 / 70% -> 37.0 / 70%; python-loop 134.4 / 25% -> 10.5 / 77%; fused 1.4 -> 1.4.
+
+**Per-algorithm in-sample MdAPE (signed ratio pred/meas), v0 -> b-all.** 4090: pca 99.7 (0.00) -> 34.7 (0.65); svd 99.1 (0.01) -> 38.0 (0.62); esprit 98.4 (0.02) -> 34.2 (0.66); music 92.0 (1.62) -> 65.6 (1.66); lms 65.9 (1.66) -> 1.9 (1.01); rls 58.6 -> 6.8; nlms 40.9 -> 6.7; apa 32.4 -> 9.7; kalman 29.5 -> 4.6; ukf 5.0 -> 1.9; ekf 4.3 -> 13.5; mdct 52.5 -> 7.0; fastica 35.1 -> 17.8; nmf 10.6 -> 27.1; particle 17.7 -> 25.0; transformer 5.7 -> 2.8; dwt_haar 32.8 -> 17.3; dst 41.3 -> 30.5; hilbert 38.7 -> 28.7; periodogram 61.3 -> 47.3; wiener 62.9 -> 53.1; dct 52.5 -> 45.7; matched 41.4 -> 37.2; savgol 30.2 -> 26.7; fft 47.3 (1.47) -> 59.6 (1.60); unchanged tail: direct_dft 296 (3.96 over), median 99.1 (0.01), iir fused 91.5 (0.08), filterbank 97.0 (1.97 over), jpeg 82.5 (0.17), welch 67.9 (0.32), fir_direct 42.0 (0.58), stft 42.4 (0.58). A100: lms 379.6 (4.80) -> 13.2 (1.13); nlms 286 -> 1.9; rls 280 -> 2.3; mdct 261 -> 6.0; ukf 173 -> 3.7; ekf 138 -> 10.0; apa 130 -> 19.6; kalman 101 -> 10.9; pca 99.3 (0.01) -> 82.3 (0.18); svd 98.3 (0.02) -> 86.0 (0.14); particle 88.6 (1.89) -> 53.1 (0.47); fastica 68.2 (0.32) -> 84.3 (0.16); nmf 45.8 (0.54) -> 84.7 (0.15); esprit 75.2 (1.75) -> 85.3 (1.85); music 74.0 -> 74.2; unchanged: direct_dft 198 (2.98 over), median 98.5, fft 108 (2.08 over), jpeg 71 (0.29), filterbank 63 (1.63 over), welch 50 (0.49).
+
+**Cross-GPU transfer (b-all):** 4090 -> A100 full 52.8% / 48% (v0 61.6 / 44); keep c,f refit m,o 20.0% / 73%; keep c,m refit o,f 34.9% / 66%. A100 -> 4090 full 85.7% / 44% (v0 54.2 / 51; alpha_o differs 7.9x between hosts); keep c,m refit o,f 24.6% / 78% / H2H 27; keep c,f refit m,o 35.0% / 73%.
+
+### Observations
+1. H1 holds: with census counts the A100 alpha_o falls to 29.5 (all commands) or 38.2 (kernels) uJ, LOAO range within 8%, and the A100 python-loop MdAPE falls from 134% to 10.5% (77% within 2x); the 4090 python-loop error falls from 31.9% to 8.7%. Head-to-head improves on the 4090 (24 -> 26 in variant a; Kalman vs UKF at N = 256 to 4096 now correct) but drops on the A100 (24 -> 22: Kalman vs UKF at 256 to 4096 now wrong). F-013's note stands in mirror image: on the 4090 UKF is measured cheaper and the census (fewer commands for UKF: 6507 vs 6804) predicts it; on the A100 Kalman is measured cheaper (UKF's 11 device-to-host syncs per iteration cost more on that host), which a single per-command cost cannot express.
+2. H2 holds on the 4090: unified S_o takes pca / svd / esprit from about 99% under to 35 to 38% (ratio 0.62 to 0.66), music from 92% to 66%, transformer from 5.7% to 2.8%, and the composite transforms improve 5 to 15 points; batched parallel predictions move by less than 5% (median launch share 4.5%). Overall 4090: MdAPE 44.3 -> 26.6, within 2x 69.6 -> 77.5, within 3x 80.4 -> 87.0, log10 r2 -0.19 -> 0.67, head-to-head 24 -> 27 / 30, LOAO 25 / 30. On the A100 the launch term at 29.5 uJ recovers only part of svd / pca (0.01 -> 0.18) and does not help esprit / music: cuSOLVER's synchronizing launches cost roughly 200 to 250 uJ each on the A100 versus 30 uJ for the Python-loop launches issued by the fast host, so per-command cost is not universal there. On the 4090 the two are 410 vs 234 uJ, close enough for one coefficient.
+3. H3 holds: alpha_o(4090) / alpha_o(A100) = 7.9 (all commands) or 6.9 (kernels), consistent with F-010's directly measured 7x per-step ratio; alpha_o / alpha_f = 4.2 on the 4090 and 0.65 on the A100. The submitted "3.1x dispatch ratio due to laptop-CPU interpreter latency" and "alpha_o / alpha_f from 2.8x (A100) to 6.9x (4090)" must be replaced: per-command cost is host-dominated (8x between hosts), and on the server it is below the fused per-step cost.
+4. H4 holds for the sequential regime (all commands: 8.7 vs 11.3 on the 4090, 10.5 vs 30.5 on the A100, because Kalman/EKF/UKF/APA's per-iteration device-to-host copies are synchronizing launches) and is a wash elsewhere (4090 MdAPE 26.6 vs 24.9, A100 19.9 vs 31.1; within-2x identical or within 3 points; ranking identical). fastica, nmf and particle become 3 to 6x under-predicted on the A100 under the corrected alpha_o: their per-iteration work is dominated by real kernel execution (bmm, QR, sort) that T_c under-counts, i.e. a compute-count problem, not a launch problem.
+5. The remaining tail after the refit is the F-020 throughput spread: median (sort), fused IIR on the 4090, direct_dft 3 to 4x over (peak-efficiency complex GEMM), fft 1.6 to 2x over (cuFFT), filterbank 2x over (cuDNN conv), and the composite FFT-based algorithms 0.3 to 0.6 under, whose NCU DRAM traffic is 5 to 9x the analytical T_m (F-001 memory ratios): eager execution materializes every intermediate. That is a memory-count question for a follow-on, not for the camera-ready.
+
+### Interpretation
+Adopt the unified S_o counting every GPU command per invocation (kernels + memcpy + memset), variant b-all, as the camera-ready model: it is the same physics as the paper's dispatch term applied without exception, its inputs are measured (Nsight Systems) like the instruction counts (Nsight Compute), it removes the special-casing of Python loops versus library loops, and it is the best or tied-best variant on every metric that matters (sequential-regime error, within-2x, log-space r2, ranking) with coefficients that barely move under LOAO. Report honestly what remains: median error 27% / 20%, 77% / 73% of configurations within 2x, 87% / 85% within 3x, ranking 27 / 30 and 22 / 30 (25 and 20 under LOAO), the host-dependence of the per-command cost, and the tail. Assumption to state: launch counts were measured on the 4090 (torch 2.6.0 / CUDA 12.4) and applied to the A100 configurations; an A100 census (EXP-CR-007, about one Lambda hour) would verify the library counts on that architecture.
+
+### Decision needed
+Confirm b-all as the model for the camera-ready (record in findings F-022), or choose b-kernels.
+
+---
