@@ -1,4 +1,4 @@
-% TOMLSignals — IEEE MLSP 2026
+% TOMLSignals - IEEE MLSP 2026 (camera-ready)
 % Transistor-Level Energy Analysis of Signal Processing Algorithms
 \documentclass{article}
 \usepackage{amsmath,graphicx,mlspconf}
@@ -7,6 +7,10 @@
 \usepackage{url}
 \usepackage{multirow}
 
+% All numbers below come from data/camera_ready/paper_numbers_v1.json via
+% analyze_results_v1.py; do not edit numbers_v1.tex by hand.
+\input{numbers_v1}
+
 % Allow more floats per page
 \renewcommand{\topfraction}{0.9}
 \renewcommand{\bottomfraction}{0.9}
@@ -14,25 +18,18 @@
 \setcounter{totalnumber}{5}
 \setcounter{dbltopnumber}{3}
 
-% Copyright notice (add at camera-ready)
-%\copyrightnotice{979-8-3503-2411-2/26/\$31.00 {\copyright}2026 IEEE}
+% Copyright notice 4 (all other papers) from the MLSP 2026 camera-ready template.
+\copyrightnotice{979-8-3195-0884-3/26/\$31.00 {\copyright}2026 IEEE}
+\toappear{2026 IEEE International Workshop on Machine Learning for Signal Processing, Sep.\ 28-- Oct.\ 1, 2026, Atlanta, USA}
 
-% Header (add at camera-ready)
-%\toappear{2026 IEEE International Workshop on Machine Learning for Signal Processing, Sep.\ 28-- Oct.\ 1, 2026, Atlanta, USA}
-
-% Double-blind submission
-\name{Anonymous\thanks{Anonymous.}}
-\address{Anonymous}
-
-% Camera-ready (uncomment when accepted):
-%\name{Muntaser Syed$^{\star\dagger}$%
-%  \qquad Marius Silaghi$^{\star}$%
-%  \qquad Sheikh Abujar$^{\dagger}$%
-%  \qquad Sharun Akter Khushbu$^{\ddagger}$}
-%\address{%
-%  $^{\star}$ Florida Institute of Technology, Melbourne, FL, USA\\%
-%  $^{\dagger}$ University of Alabama at Birmingham, Birmingham, AL, USA\\%
-%  $^{\ddagger}$ Daffodil International University, Dhaka, Bangladesh}
+\name{Muntaser Syed$^{\star\dagger}$%
+  \qquad Marius Silaghi$^{\star}$%
+  \qquad Sheikh Abujar$^{\dagger}$%
+  \qquad Sharun Akter Khushbu$^{\ddagger}$}
+\address{%
+  $^{\star}$ Florida Institute of Technology, Melbourne, FL, USA\\%
+  $^{\dagger}$ University of Alabama at Birmingham, Birmingham, AL, USA\\%
+  $^{\ddagger}$ Daffodil International University, Dhaka, Bangladesh}
 
 \title{Transistor-Level Energy Analysis of Signal Processing Algorithms: Beyond Operation Counting}
 
@@ -41,7 +38,7 @@
 \maketitle
 
 \begin{abstract}
-Accurate energy prediction for signal processing algorithms is critical for resource-constrained and energy-aware systems, yet existing approaches rely on floating-point operation counts that ignore memory hierarchy costs, sequential dispatch overhead, and hardware implementation details. We present a physics-grounded energy model based on Transistor Operations (TOs), validated across 37 signal processing algorithms spanning 8 categories on two NVIDIA GPUs (RTX 4090 and A100 SXM4). Our four-parameter model achieves $r^2 = 0.947$ (RTX 4090) and $r^2 = 0.982$ (A100) with 80\% head-to-head ranking accuracy. Nsight Compute hardware profiling validates key corrections including split-radix FFT operation counts (99.4\% match) and complex MAC reduction on FMA hardware (99.2\% match). We identify three distinct energy regimes for sequential algorithms, with a 3 to 7$\times$ per-step energy difference between Python-loop dispatch and fused-sequential execution. A systematic CPU vs.\ GPU comparison across all 37 algorithms reveals that sequential algorithms are 10 to 100$\times$ more energy-efficient on CPU, challenging the assumption that GPUs are universally superior for compute.
+Energy estimates for signal processing algorithms usually rest on floating-point operation counts, which ignore memory traffic, command overhead, and the gap between textbook formulas and library implementations. We present an energy model based on Transistor Operations (TOs), the physics-grounded cost unit of the TOML framework, and validate it on 37 signal processing algorithms in 8 categories on two NVIDIA GPUs (RTX 4090 and A100 SXM4). Its four fitted coefficients (compute, memory, GPU-command dispatch, fused-sequential step) take measured inputs: analytical operation counts checked against Nsight Compute instruction counts, and per-invocation GPU command counts measured with Nsight Systems. It predicts energy with median errors of \mdapea\% and \mdapeb\%, places \withinTwoa\% and \withinTwob\% of configurations within a factor of two, and ranks \hhPooledPct\% of head-to-head algorithm pairs correctly (\hhPooledLOAOPct\% under leave-one-algorithm-out cross-validation). Profiling confirms the split-radix FFT and 4-FMA complex MAC corrections and shows that library kernels on tiny matrices execute 30 to 500 times the arithmetic count as fixed work per launch. The per-command cost is set by the host (\alphaOa\ vs.\ \alphaOb\,$\mu$J), which sets the payoff of kernel fusion; sequential algorithms are 10 to 100$\times$ more energy-efficient on CPU; and measured energy per operation spans 60$\times$ across floating-point kernels, which bounds any constant-cost-per-operation model.
 \end{abstract}
 
 \begin{keywords}
@@ -53,16 +50,16 @@ Energy efficiency, signal processing, GPU, transistor operations, power measurem
 \label{sec:intro}
 % =========================================================================
 
-Energy consumption is a first-order design constraint for signal processing systems, from battery-powered edge devices to datacenter-scale inference pipelines. Practitioners routinely estimate computational cost by counting floating-point operations (FLOPs), yet this metric systematically misrepresents actual energy. It ignores three physical realities: (i)~memory accesses cost 5 to 200$\times$ more energy than arithmetic~\cite{Horowitz2014}, (ii)~sequential algorithms on GPUs incur per-step dispatch overhead that can dominate the computation itself, and (iii)~hardware implementations diverge from textbook operation counts. As a concrete example of~(iii), fused multiply-add units halve complex MAC costs, and cuFFT's split-radix algorithm uses 30\% fewer operations than the standard Cooley-Tukey formula.
+Energy consumption is a first-order design constraint for signal processing systems, from battery-powered edge devices to datacenter inference pipelines. Practitioners routinely estimate computational cost by counting floating-point operations (FLOPs), yet this metric systematically misrepresents energy. It ignores three physical realities: (i)~memory accesses cost 5 to 200$\times$ more energy than arithmetic~\cite{Horowitz2014}, (ii)~every command issued to a GPU carries a fixed cost that dominates when kernels are small, and (iii)~hardware implementations diverge from textbook operation counts. As a concrete example of~(iii), fused multiply-add units halve complex MAC costs, and cuFFT executes 30\% fewer instructions than the Cooley-Tukey formula predicts.
 
-Prior work on energy-aware computing has focused on neural network accelerators~\cite{Yang2017, Desoli2017} and coarse GPU-level power modeling~\cite{Bridges2016}. The Transistor Operations (TO) framework~\cite{AnonTOML2026} introduced physics-grounded energy units anchored to CMOS transistor switching costs at a 45\,nm reference node, achieving $r^2 = 0.961$ across seven deep learning architectures. A subsequent study extended the framework to containerized cloud workloads~\cite{AnonTOMLCloud2026}. Neither study addressed signal processing, where computational patterns differ substantially from neural network inference: FFT butterfly structures, recursive filters, iterative decompositions, and purely comparison-based workloads such as median filtering (which executes zero floating-point instructions on GPU hardware).
+Prior work on energy-aware computing has focused on neural network accelerators~\cite{Yang2017, Desoli2017}, coarse GPU-level power modeling~\cite{Bridges2016}, node-level power measurement of GPU servers under AI training~\cite{Latif2025, Latif2026}, and validation of software energy estimators against external meters~\cite{Fischer2025}. The Transistor Operations (TO) framework~\cite{Syed2026TOML} introduced physics-grounded energy units anchored to CMOS transistor switching costs at a 45\,nm reference node, achieving $r^2 = 0.961$ across seven deep learning architectures. A subsequent study extended the framework to containerized cloud workloads~\cite{Syed2026TOMLCloud}. Neither study addressed signal processing, where computational patterns differ substantially from neural network inference: FFT butterfly structures, recursive filters, iterative decompositions, and purely comparison-based workloads such as median filtering (which executes zero floating-point instructions on GPU hardware).
 
 This paper makes four contributions:
 \begin{enumerate}
 \itemsep0pt
-\item A four-parameter energy model for 37 signal processing algorithms across 8 categories, achieving $r^2 = 0.947$ (RTX 4090) and $r^2 = 0.982$ (A100 SXM4) with 80\% head-to-head ranking accuracy on both GPUs.
-\item Hardware-validated corrections to standard operation counts, including split-radix FFT (99.4\% match to Nsight Compute instruction counts) and complex MAC on FMA hardware (99.2\% match), with corrections that propagate to all FFT-based algorithms.
-\item Identification of three sequential energy regimes with a 3 to 7$\times$ per-step cost difference between Python-loop dispatch and fused-sequential execution: parallel, Python-loop dispatch, and fused-sequential.
+\item A four-parameter energy model whose inputs are measured, not assumed: analytical operation counts validated by Nsight Compute for all 37 algorithms, and per-invocation GPU command counts measured by Nsight Systems for every benchmark configuration. On 264 measurements the model has a median error of \mdapea\% and \mdapeb\% on the two GPUs, \withinTwoa\% and \withinTwob\% of predictions within 2$\times$, and \hhPooledPct\% head-to-head ranking accuracy, with leave-one-algorithm-out results reported alongside.
+\item Instruction-count validation of two corrections to standard operation counting (split-radix FFT across a size sweep, complex MAC as 4 FMAs), and the finding that library kernels on tiny matrices execute 30 to 500$\times$ the arithmetic count as fixed work per launch, which is what the dispatch term prices.
+\item Three sequential energy regimes with a per-command cost that is a property of the host: \alphaOa\,$\mu$J on a laptop and \alphaOb\,$\mu$J on a server, so the payoff of fusing a Python loop into one kernel is \fusionGainMina\ to \fusionGainMaxa$\times$ per timestep on the former and \fusionGainMinb\ to \fusionGainMaxb$\times$ on the latter.
 \item A systematic CPU vs.\ GPU energy comparison across all 37 algorithms showing that sequential algorithms are 10 to 100$\times$ more efficient on CPU, with clear category-level crossover guidance.
 \end{enumerate}
 
@@ -75,7 +72,6 @@ This paper makes four contributions:
 
 A Transistor Operation (TO) is a unit of computational cost anchored to CMOS circuit-level energy measurements at a 45\,nm reference node~\cite{Horowitz2014}. At 45\,nm and 0.9\,V, Horowitz reports that a 32-bit floating-point multiply costs 3.7\,pJ and a 32-bit floating-point add costs 0.9\,pJ, giving a multiply-accumulate (MAC) cost of approximately 4.6\,pJ~\cite{Sze2017}. We define 1\,TO $\approx$ 1\,fJ, so that one FP32 MAC corresponds to 5{,}000\,TOs.
 
-% Table 1 placed here so it appears at top of this page
 \begin{table}[!t]
 \centering
 \caption{TO cost table at 45\,nm reference node~\cite{Horowitz2014}.}
@@ -100,34 +96,31 @@ Memory & SRAM (32-bit word) & 192 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:to_costs} lists the TO costs used in this work, identical to those in prior studies~\cite{AnonTOML2026, AnonTOMLCloud2026}. Each floating-point operation on a modern GPU dispatches a full fused multiply-add (FMA) unit regardless of whether the instruction is an add, multiply, or FMA~\cite{NsightCompute}, so all three map to a single MAC cost. Transcendental functions (exp, sin, sqrt) are evaluated via polynomial approximation or Newton-Raphson iteration, requiring 3 to 4 FMA cycles and hence proportionally higher TO costs. Memory costs are weighted separately: the table assigns 192\,TOs per 32-bit SRAM word and 10{,}000\,TOs per HBM word, reflecting the order-of-magnitude hierarchy measured by Horowitz (5\,pJ for 8\,KB SRAM, 640\,pJ for DRAM). These TO values are \emph{relative weights}, not direct energy predictions; the fitted coefficients $\alpha_c$ and $\alpha_m$ (Section~\ref{sec:framework_model}) absorb architecture-specific and process-node scaling.
+Table~\ref{tab:to_costs} lists the TO costs used in this work, identical to those in prior studies~\cite{Syed2026TOML, Syed2026TOMLCloud}. Each floating-point operation on a modern GPU dispatches a full fused multiply-add (FMA) unit regardless of whether the instruction is an add, multiply, or FMA~\cite{NsightCompute}, so all three map to a single MAC cost. Transcendental functions are evaluated via polynomial approximation or Newton-Raphson iteration, requiring 3 to 4 FMA cycles and hence proportionally higher TO costs. Memory costs are weighted separately: 192\,TOs per 32-bit SRAM word and 10{,}000\,TOs per HBM word, reflecting the order-of-magnitude hierarchy measured by Horowitz (5\,pJ for 8\,KB SRAM, 640\,pJ for DRAM). These TO values are \emph{relative weights}, not direct energy predictions; the fitted coefficients (Section~\ref{sec:framework_model}) absorb architecture-specific and process-node scaling.
 
 \subsection{Four-Parameter Energy Model}
 \label{sec:framework_model}
 
-For each algorithm, we derive the compute TO count $T_c$ and memory TO count $T_m$ analytically from the algorithm's mathematical definition, making these counts architecture-independent. The total predicted energy for a GPU invocation is:
+For each algorithm we derive the compute TO count $T_c$ and memory TO count $T_m$ analytically from the algorithm's mathematical definition, so these counts are architecture-independent. The predicted energy of one GPU invocation is
 \begin{equation}
 E = \alpha_c \cdot T_c + \alpha_m \cdot T_m + \alpha_o \cdot S_o + \alpha_f \cdot S_f
 \label{eq:four_param}
 \end{equation}
-where $S_o$ is the number of CUDA kernel launches in Python-loop sequential algorithms, $S_f$ is the number of fused-sequential timesteps, and $\alpha_c, \alpha_m, \alpha_o, \alpha_f \geq 0$ are fitted via non-negative least squares (NNLS). The non-negativity constraint is physical: energy cannot decrease with additional computation, memory access, or sequential overhead.
+where $S_o$ is the number of GPU commands (kernel launches, memory copies, and memsets) issued by the invocation, $S_f$ is the number of fused-sequential timesteps, and $\alpha_c, \alpha_m, \alpha_o, \alpha_f \geq 0$ are fitted by non-negative least squares (NNLS). Non-negativity is physical: energy cannot decrease with more computation, memory access, or commands.
 
-Each term captures a distinct energy mechanism:
+\textbf{Compute energy} ($\alpha_c \cdot T_c$). The counts $T_c$ follow from each algorithm's mathematical structure. For FFT we use the split-radix count $4N \log_2 N - 6N + 8$~\cite{Duhamel1990} rather than the Cooley-Tukey count; for complex-valued algorithms we count 4~FMAs per complex MAC instead of 8 real operations. Both choices are checked against instruction counts in Section~\ref{sec:ncu}. $\alpha_c$ absorbs the ratio between operations counted and energy actually spent per operation on each GPU.
 
-\textbf{Compute energy} ($\alpha_c \cdot T_c$). The operation counts $T_c$ follow from each algorithm's mathematical structure. For FFT, we use the split-radix formula $4N \log_2 N - 6N + 8$~\cite{Duhamel1990} rather than the Cooley-Tukey count, reducing the predicted operation count by 30\%. For complex-valued algorithms, we count 4\,FMAs per complex MAC instead of 8 real operations, matching FMA hardware behavior. Both corrections are validated against Nsight Compute~\cite{NsightCompute} instruction counts in Section~\ref{sec:results}. The coefficient $\alpha_c$ absorbs the ratio between mathematical operation counts and actual instruction throughput on each GPU.
+\textbf{Memory energy} ($\alpha_m \cdot T_m$). We count HBM words read and written per invocation from each algorithm's data access pattern (inputs, outputs, and intermediate buffers that spill to global memory); on-chip reuse within a kernel counts as SRAM. $\alpha_m$ exceeds $\alpha_c$ on both GPUs, reflecting the energy dominance of data movement.
 
-\textbf{Memory energy} ($\alpha_m \cdot T_m$). We count HBM words read and written per invocation based on each algorithm's data access pattern (input, output, and intermediate buffers that spill to global memory). On-chip reuse within a single kernel (e.g., FFT butterfly in shared memory) is counted as SRAM. The fitted $\alpha_m$ is consistently larger than $\alpha_c$ across GPUs, reflecting the energy dominance of data movement.
+\textbf{Command dispatch} ($\alpha_o \cdot S_o$). Every command issued to the GPU costs a fixed amount of energy: idle power spent while the host prepares and issues the next command, plus any fixed padded work the kernel executes regardless of its problem size. $S_o$ is measured, not derived: for every benchmark configuration we count the commands of one invocation with Nsight Systems (Section~\ref{sec:census}). Python-loop algorithms (adaptive filters, state estimators, iterative decompositions) issue 7 to 54 commands per iteration and 1{,}300 to 8{,}600 per invocation; library factorizations issue hundreds per call (cuSOLVER SVD 137 to 245, PCA 166); batched transforms and filters issue 1 to 14. The same coefficient prices every command whatever issued it.
 
-\textbf{Python-loop dispatch} ($\alpha_o \cdot S_o$). Sequential algorithms (adaptive filters, state estimators) execute a Python loop that launches CUDA kernels on each iteration. We count $S_o = I \times K$ where $I$ is the number of outer loop iterations and $K$ is the number of kernel launches per iteration (ranging from 7 for LMS to 43 for UKF, determined by source code analysis). Counting kernel launches rather than loop iterations alone reduces the coefficient of variation across algorithms from 130\% to 34\%, because $K$ captures the per-iteration computational density.
-
-\textbf{Fused-sequential} ($\alpha_f \cdot S_f$). Algorithms that process timesteps serially within a single C++/CUDA kernel (e.g., cuDNN LSTM at batch size $B=1$) avoid Python dispatch entirely but still incur per-timestep energy from serial execution at low GPU utilization. The ratio $\alpha_o / \alpha_f$ ranges from 2.8$\times$ to 6.9$\times$ across GPUs, confirming these are distinct mechanisms: $\alpha_o$ is dominated by host-side CPU dispatch cost, while $\alpha_f$ reflects GPU-side serial execution cost.
+\textbf{Fused-sequential} ($\alpha_f \cdot S_f$). Algorithms that process timesteps serially inside a single kernel (cuDNN LSTM at batch size $B = 1$, which launches 6 to 8 kernels for any $N$) issue almost no commands but pay per-timestep energy for serial execution at low GPU utilization.
 
 % =========================================================================
 \section{Experimental Setup}
 \label{sec:setup}
 % =========================================================================
 
-% Table 2 placed before the text that references it
 \begin{table}[!t]
 \centering
 \caption{Algorithm categories and counts (37 total).}
@@ -150,47 +143,57 @@ ML-enhanced & 3 & CNN, LSTM, Transformer denoisers \\
 
 \subsection{Algorithm Selection}
 
-We benchmark 37 signal processing algorithms across 8 categories (Table~\ref{tab:algorithms}), selected to span the computational diversity of the field: from embarrassingly parallel transforms to inherently sequential recursive filters and iterative estimation. All implementations use canonical libraries (PyTorch, SciPy, scikit-learn, PyWavelets, torchaudio)~\cite{PyTorch} rather than custom CUDA kernels, reflecting the implementations practitioners actually deploy.
+We benchmark 37 signal processing algorithms across 8 categories (Table~\ref{tab:algorithms}), spanning embarrassingly parallel transforms, inherently sequential recursive filters, and iterative estimation. All implementations use canonical libraries (PyTorch, SciPy, scikit-learn, PyWavelets, torchaudio)~\cite{PyTorch} rather than custom CUDA kernels, i.e.\ the implementations practitioners actually deploy.
 
 Each algorithm is benchmarked at four signal lengths ($N = 256$, $1024$, $4096$, $16384$) in FP32 precision. GPU batch sizes are $B = 2048$ where parallelizable (transforms, filters, spectral, ML), with smaller $B$ for algorithms whose memory footprint scales with $B \times N$ (e.g., $B = 512$ for direct DFT, $B = 2$ for ESPRIT at $N = 1024$). CPU benchmarks use $B = 1$.
 
 \subsection{Hardware and Power Measurement}
 
-\textbf{GPUs.} We measure on two NVIDIA GPUs: an RTX 4090 and an A100 SXM4. GPU power is sampled via NVML at approximately 20\,Hz. The RTX 4090 yields 138 benchmark points and the A100 yields 126.
+\textbf{GPUs.} We measure on two NVIDIA GPUs: an RTX 4090 hosted by an Intel Core i9-14900HX laptop and an A100 SXM4 in a server. GPU power is sampled via NVML at approximately 20\,Hz. The RTX 4090 yields \nptsa\ benchmark points and the A100 yields \nptsb.
 
-\textbf{CPU.} An Intel Core i9-14900HX (8 Performance + 16 Efficiency cores, 55\,W base TDP) is measured via RAPL ``CPU Package'' counters exposed through LibreHardwareMonitor at approximately 217\,Hz, yielding 147 benchmark points.
+\textbf{CPU.} The i9-14900HX (8 Performance + 16 Efficiency cores, 55\,W base TDP) is measured via RAPL ``CPU Package'' counters exposed through LibreHardwareMonitor at approximately 217\,Hz, yielding 147 benchmark points.
 
-\textbf{Thermal settling.} Before each measurement, we wait for the processor temperature to stabilize within $\pm 1^\circ$C over a 5-second window. This prevents thermal transients from biasing power readings, as leakage current is exponential in temperature.
+\textbf{Thermal settling.} Before each measurement we wait for the processor temperature to stabilize within $\pm 1^\circ$C over 5\,s, since leakage current is exponential in temperature.
 
-\textbf{Idle baseline.} Each algorithm measurement begins with a per-algorithm idle power measurement (3\,s for GPU, 10\,s for CPU), from which we compute $\Delta P = P_{\text{active}} - P_{\text{idle}}$. Per-algorithm baselines are necessary because idle power drifts with temperature across a multi-hour benchmark suite.
+\textbf{Idle baseline.} Each measurement begins with a per-algorithm idle power measurement (3\,s for GPU, 10\,s for CPU), giving $\Delta P = P_{\text{active}} - P_{\text{idle}}$; per-algorithm baselines are needed because idle power drifts with temperature over a multi-hour suite.
 
-\textbf{Measurement loop.} Each algorithm executes continuously for at least 10\,s (GPU) or 2\,s (CPU), with 50 warmup iterations on GPU to trigger JIT compilation and cache fills. Energy per call is computed as $E = \Delta P \times t / n_{\text{calls}}$, where $t$ is the active measurement duration and $n_{\text{calls}}$ is the total number of algorithm invocations.
+\textbf{Measurement loop.} Each algorithm executes continuously for at least 10\,s (GPU) or 2\,s (CPU), after 50 GPU warmup iterations; energy per call is $E = \Delta P \times t / n_{\text{calls}}$.
 
-\subsection{Nsight Compute Validation}
+\subsection{Instruction Counts: Nsight Compute}
+\label{sec:setup_ncu}
 
-To validate the TO operation counts against actual hardware instruction throughput, we profile 23 of the 37 algorithms using NVIDIA Nsight Compute~\cite{NsightCompute} at $B = 1$ on the RTX 4090. The profiler reports per-kernel FP32 and FMA instruction counts, which we aggregate across all kernels in a single algorithm invocation and compare against the TO model's predicted operation counts. This provides a ground-truth check independent of the energy model's fitted $\alpha$ coefficients. Code and data are available at \url{https://anonymous.4open.science/r/TOMLSignals-8810/}.
+To check the analytical operation counts against what the hardware executes, we profile all 37 algorithms with NVIDIA Nsight Compute~\cite{NsightCompute} at $B = 1$ on the RTX 4090, summing FP32 FMA, add, and multiply instructions over every kernel of one invocation. Python-loop algorithms are profiled over one full loop period (their kernel sequence repeats exactly) and scaled by the iteration count. This check is independent of the fitted coefficients.
+
+\subsection{Command Counts: Nsight Systems}
+\label{sec:census}
+
+$S_o$ is measured with NVIDIA Nsight Systems~\cite{NsightSystems}: for each of the 264 benchmark configurations we set up the algorithm exactly as the harness does, warm up, and trace one invocation, counting kernel launches, memory copies, and memsets. Counts are deterministic across repeats and independent of $N$ for the fixed-iteration Python loops; cuSOLVER changes its SVD algorithm at $N = 1024$ (from a Householder path with 245 kernels to batched Jacobi with 137). Counts were taken on the RTX 4090 (PyTorch 2.6, CUDA 12.4) and applied to both GPUs' configurations. Code, data, and traces are available at \url{https://github.com/jemsbhai/TOMLSignals}.
 
 % =========================================================================
 \section{Results}
 \label{sec:results}
 % =========================================================================
 
-% Table 3 and Fig 1 placed before the text that references them
 \begin{table}[!t]
 \centering
-\caption{Fitted coefficients and model accuracy.}
+\caption{Fitted coefficients for compute, memory, command dispatch and fused-sequential execution (in-sample; brackets: range over the 37 leave-one-algorithm-out folds), and accuracy in-sample / leave-one-algorithm-out (LOAO).}
 \label{tab:coefficients}
-\begin{tabular}{lrrl}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrr}
 \toprule
-Coefficient & RTX 4090 & A100 & Physical meaning \\
+ & RTX 4090 & A100 SXM4 \\
 \midrule
-$\alpha_c$ (fJ/TO) & 13.6 & 15.2 & Compute scaling \\
-$\alpha_m$ (fJ/TO) & 71.8 & 184.3 & Memory scaling \\
-$\alpha_o$ ($\mu$J/launch) & 385.4 & 125.2 & Python dispatch \\
-$\alpha_f$ ($\mu$J/step) & 55.7 & 45.3 & Fused-sequential \\
+$\alpha_c$ (fJ/TO) & \alphaCa\ [\alphaCrangea] & \alphaCb\ [\alphaCrangeb] \\
+$\alpha_m$ (fJ/TO) & \alphaMa\ [\alphaMrangea] & \alphaMb\ [\alphaMrangeb] \\
+$\alpha_o$ ($\mu$J/command) & \alphaOa\ [\alphaOrangea] & \alphaOb\ [\alphaOrangeb] \\
+$\alpha_f$ ($\mu$J/step) & \alphaFa & \alphaFb \\
 \midrule
-$r^2$ & 0.947 & 0.982 & \\
-Ranking accuracy & 80\% & 80\% & (24/30 pairs) \\
+Median error, in / LOAO & \mdapea\% / \mdapeLOAOa\% & \mdapeb\% / \mdapeLOAOb\% \\
+Within 2$\times$, in / LOAO & \withinTwoa\% / \withinTwoLOAOa\% & \withinTwob\% / \withinTwoLOAOb\% \\
+Within 3$\times$, in / LOAO & \withinThreea\% / \withinThreeLOAOa\% & \withinThreeb\% / \withinThreeLOAOb\% \\
+$r^2$ linear / $\log_{10}$ & \rTwoLina\ / \rTwoLoga & \rTwoLinb\ / \rTwoLogb \\
+Head-to-head, in / LOAO & \hha\ / \hhLOAOa & \hhb\ / \hhLOAOb \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -198,89 +201,75 @@ Ranking accuracy & 80\% & 80\% & (24/30 pairs) \\
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig1_scatter}
-\caption{Predicted vs.\ measured energy (log-log) for the four-parameter model on both GPUs. Each point is one (algorithm, signal length) configuration.}
+\caption{Predicted vs.\ measured energy for the four-parameter model on both GPUs. Dashed: identity; dotted: factor of two. Each point is one (algorithm, $N$, $B$) configuration.}
 \label{fig:scatter}
 \end{figure}
 
 \subsection{Model Accuracy}
 
-Table~\ref{tab:coefficients} reports the fitted coefficients for the four-parameter model (Eq.~\ref{eq:four_param}) on each GPU. The model achieves $r^2 = 0.947$ on the RTX 4090 (138 points) and $r^2 = 0.982$ on the A100 (126 points). Figure~\ref{fig:scatter} shows predicted versus measured energy on a log-log scale; points cluster tightly along the identity line across five orders of magnitude.
+Table~\ref{tab:coefficients} reports the fitted coefficients and Fig.~\ref{fig:scatter} the predictions. Because the measured energies span five decades, we report the error distribution rather than $r^2$ alone: the median absolute error is \mdapea\% on the RTX 4090 and \mdapeb\% on the A100, \withinTwoa\% and \withinTwob\% of configurations fall within a factor of two of measurement, and \withinThreea\% and \withinThreeb\% within a factor of three (linear-space $r^2$ is \rTwoLina\ and \rTwoLinb; $\log_{10}$-space $r^2$ is \rTwoLoga\ and \rTwoLogb). To separate fit from prediction we refit the model 37 times leaving out one algorithm at a time and predict every configuration of the held-out algorithm: the median error rises to \mdapeLOAOa\% and \mdapeLOAOb\%, \withinTwoLOAOa\% and \withinTwoLOAOb\% stay within 2$\times$, and every coefficient stays within its bracket in Table~\ref{tab:coefficients}. Leaving out single configurations instead changes the in-sample numbers by under two points: four coefficients do not memorize 138 points. $\alpha_f$ is identified by the LSTM alone, so its fold is the one case the model cannot predict (error about 90\%).
 
-The cross-GPU coefficient ratios are physically interpretable. The compute coefficients $\alpha_c$ are similar (13.6 vs.\ 15.2\,fJ/TO), consistent with comparable FP32 throughput on both architectures. The memory coefficient $\alpha_m$ is 2.6$\times$ larger on the A100, consistent with its wider memory interface and higher uncounted memory overhead (ECC, memory controller scheduling). The dispatch overhead $\alpha_o$ is 3.1$\times$ larger on the RTX 4090 because its host CPU (i9-14900HX) has higher Python interpreter latency than the A100's server-class Xeon. The fused-sequential coefficient $\alpha_f$ is consistent across GPUs (55.7 vs.\ 45.3\,$\mu$J/step, ratio 1.2$\times$), as expected for a GPU-side cost.
+By regime, the Python-loop algorithms are the best predicted (median error \mdapeLoopa\% and \mdapeLoopb\%; \withinTwoLoopa\% and \withinTwoLoopb\% within 2$\times$) because their energy is almost entirely command cost, and the fused LSTM is predicted within \mdapeFuseda\%; the parallel regime carries the residual (\mdapePara\% and \mdapeParb\%), whose origin Section~\ref{sec:discussion} makes precise. A single-coefficient model $E = \alpha \cdot \text{TO}_{\text{total}}$, the calibrated-FLOP-counting analogue, reaches $r^2 = \baseRtwoa$ and \baseRtwob\ with median errors of \baseMdapea\% and \baseMdapeb\%.
 
-% Fig 3 placed before head-to-head subsection
+The coefficients are physically interpretable. $\alpha_c$ agrees across GPUs within 12\% (\alphaCa\ vs.\ \alphaCb\,fJ/TO), as expected for comparable FP32 units. $\alpha_m$ is 2.6$\times$ larger on the A100, consistent with its wider memory interface and uncounted memory-controller overhead. $\alpha_o$ differs by \alphaOhostRatio$\times$ (\alphaOa\ vs.\ \alphaOb\,$\mu$J per command): the cost of a command is set by how long the GPU idles while the host issues the next one, i.e.\ by the host, and matches the 7$\times$ per-step ratio measured directly on the Python loops. $\alpha_f$ is a GPU-side serial cost and differs by 1.2$\times$. Accordingly, $\alpha_c$ and $\alpha_m$ transfer between the two systems (A100 coefficients applied to the RTX 4090 with only $\alpha_o$ and $\alpha_f$ refit predict as well as the RTX 4090's own fit: \xferBtoAKeepCMMdape\% median error, \xferBtoAKeepCMWithinTwo\% within 2$\times$, \xferBtoAKeepCMHH\ head-to-head), whereas $\alpha_o$ must be measured on the target host.
+
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig3_headtohead}
-\caption{Head-to-head ranking accuracy. Green: model correctly identifies the cheaper algorithm. Red: ranking failure.}
+\caption{Head-to-head ranking on the RTX 4090. Green: the model identifies the cheaper algorithm of the pair; red: ranking failure.}
 \label{fig:headtohead}
 \end{figure}
 
 \subsection{Head-to-Head Ranking}
 
-To test whether the model correctly identifies the more energy-efficient algorithm in practical choices, we evaluate 30 head-to-head pairs (e.g., FIR direct vs.\ FIR FFT-based, CNN vs.\ LSTM denoiser, Kalman vs.\ UKF). The model correctly ranks 24 of 30 pairs (80\%) on both GPUs (Fig.~\ref{fig:headtohead}). The six failures on each GPU are concentrated in sequential algorithm pairs (Kalman vs.\ UKF, LMS vs.\ RLS), where the model's single $\alpha_o$ coefficient cannot capture the variation in per-launch compute density across algorithms. One additional failure on each GPU involves a measurement-noise tie at $N = 256$.
+To test whether the model identifies the more energy-efficient algorithm in practical choices, we evaluate 30 head-to-head pairs per GPU (FFT vs.\ direct DFT, FIR direct vs.\ FFT-based, LMS vs.\ RLS, Kalman vs.\ UKF, periodogram vs.\ Welch, CNN vs.\ LSTM, LSTM vs.\ Transformer, Wiener vs.\ CNN, at every common $N$) against the measured ordering. The model ranks \hha\ pairs correctly on the RTX 4090 (Fig.~\ref{fig:headtohead}) and \hhb\ on the A100, \hhPooled\ overall (\hhPooledPct\%); under leave-one-algorithm-out, where each algorithm of a pair is predicted by a model that never saw it, \hhPooledLOAO\ (\hhPooledLOAOPct\%). Every failure involves two Python-loop algorithms or a near tie. Kalman vs.\ UKF is the instructive case: UKF issues fewer commands per invocation (6{,}507 vs.\ 6{,}804) but eleven per iteration are synchronizing device-to-host copies, which cost more than a plain launch on the server host and less on the laptop; the measured winner differs between the systems (UKF on the RTX 4090, Kalman on the A100), and a single per-command cost reproduces only one of them. LMS vs.\ RLS at the largest $N$ and the periodogram vs.\ Welch tie at $N = 256$ are within measurement noise.
 
-% Fig 8 placed before NCU subsection
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig8_ncu_validation}
-\caption{TO-predicted vs.\ Nsight Compute measured FP32 instruction counts for 23 algorithms ($B = 1$). Dashed line is identity.}
+\caption{Analytical FP32 operation counts vs.\ Nsight Compute FP32 instruction counts for all 37 algorithms ($B = 1$). Circles: kernels that are the algorithm; squares: library kernels on small tensors that execute fixed padded tiles; triangles: iterative factorizations. Dashed line: identity.}
 \label{fig:ncu}
 \end{figure}
 
-\subsection{Nsight Compute Validation}
+\subsection{Instruction-Count Validation}
+\label{sec:ncu}
 
-The TO operation counts are validated against hardware instruction counts from Nsight Compute, independent of the fitted $\alpha$ coefficients. Two corrections to standard operation-counting formulas are confirmed:
+Figure~\ref{fig:ncu} compares the analytical counts with executed FP32 instructions for all 37 algorithms. They fall into three populations.
 
-\textbf{Split-radix FFT.} The standard Cooley-Tukey formula ($5N \log_2 N$ real FP ops) overpredicts cuFFT's actual FP32 instruction count by 30\%. The split-radix formula $4N \log_2 N - 6N + 8$~\cite{Duhamel1990} matches Nsight Compute at $N = 4096$: 172{,}040 predicted vs.\ 173{,}055 measured (99.4\%). This correction propagates to all nine FFT-based algorithms.
+\textbf{Kernels that are the algorithm} (\ncuAnalyticalN\ algorithms: transforms, convolutions, matrix products, ESPRIT, RLS, DWT, fused IIR, the three denoisers): the median ratio of executed to analytical count is \ncuAnalyticalMedian, with a range of \ncuAnalyticalMin\ (Transformer, whose attention count is conservative) to \ncuAnalyticalMax\ (DST, whose odd-length FFT falls back to a mixed-radix plan~\cite{Duhamel1990}). Two corrections to standard operation counting are confirmed here. \emph{Split-radix FFT:} across a size sweep at $N = 256$, 1024 and 4096, cuFFT's instruction count is \fftRatioTwoFiveSix, \fftRatioOneK\ and \fftRatioFourK\ times the split-radix count $4N \log_2 N - 6N + 8$ (172{,}040 predicted vs.\ 173{,}055 measured at $N = 4096$), against 0.62 to 0.72 times Cooley-Tukey $5N \log_2 N$; at $N \geq 16384$ cuFFT changes plan (a 32-element-per-thread symmetric kernel, then a two-pass $128 \times 256$ factorization) and executes \fftRatioSixteenK\ times the split-radix count, so the analytical count is a bound the library beats. \emph{Complex MAC on FMA hardware:} the textbook 8 real operations per complex MAC overpredict by 2$\times$; with 4~FMAs the direct DFT at $N = 1024$ gives 4{,}194{,}304 predicted vs.\ 4{,}229{,}120 measured (99.2\%).
 
-\textbf{Complex MAC on FMA hardware.} The textbook complex multiply-accumulate (8 real ops: 4 multiplies + 4 adds) overpredicts by 2$\times$ on FMA hardware, where each complex MAC requires exactly 4 FMA instructions. For direct DFT at $N = 1024$ ($N^2$ complex MACs): 4{,}194{,}304 predicted vs.\ 4{,}229{,}120 measured (99.2\%). The 0.8\% residual corresponds to thread-block reduction operations.
+\textbf{Small-tensor library kernels} (\ncuPaddedN\ algorithms): the Python-loop algorithms, the JPEG codec, and single-channel direct FIR call cuBLAS, cuSOLVER, or cuDNN routines on 4$\times$4 matrices, 32-vectors, or one output channel, and those kernels execute fixed tiles (256-thread GEMM tiles, 32-wide LU panels, 32-output-channel convolution tiles) whatever the problem size: \ncuPaddedMin\ (LMS) to \ncuPaddedMax$\times$ (Kalman) the arithmetic count. This is a fixed cost per command, which is what $\alpha_o$ prices; on the RTX 4090 the Kalman filter's 16.4\,M executed instructions cost about 1\,mJ against 1.6\,J of command cost.
 
-Figure~\ref{fig:ncu} plots predicted versus measured instruction counts for all 23 profiled algorithms. Algorithms with analytically tractable operation counts (FFT, DFT, convolution, matmul-based) fall on or near the identity line. Algorithms with implementation-dependent iteration counts (SVD, PCA) show 3 to 10$\times$ underprediction, because cuSOLVER's iterative QR decomposition has convergence-dependent cost that no fixed formula can capture~\cite{GolubVanLoan2013}. The TO model uses the Householder bidiagonalization lower bound ($6ND^2$) for these algorithms; the gap is absorbed by $\alpha_c$.
+\textbf{Iterative factorizations} (SVD, PCA, MUSIC): cuSOLVER's factorization and eigensolver paths have convergence-dependent cost that no fixed formula captures~\cite{GolubVanLoan2013}; the model uses Householder lower bounds ($6ND^2$ for SVD) and executed counts are \ncuFactMin\ to \ncuFactMax$\times$ higher. The median filter executes no FP32 instructions at all (comparison sorting) and is excluded from the ratio.
 
-% Fig 2 placed before scaling subsection
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig2_scaling}
-\caption{Energy vs.\ signal length for representative algorithms. Solid: measured. Dashed: predicted. Both axes log-scale.}
+\caption{Energy vs.\ signal length for representative algorithms on the RTX 4090. Solid: measured; dashed: predicted, in the same color.}
 \label{fig:scaling}
 \end{figure}
 
-\subsection{Signal Length Scaling}
+\subsection{Signal Length Scaling and FIR Crossover}
 
-Figure~\ref{fig:scaling} shows how predicted and measured energy scale with signal length $N$ for representative algorithms. The model correctly tracks the $O(N \log N)$ scaling of FFT, the $O(N)$ scaling of FIR, and the $O(N^2)$ scaling of direct DFT across two orders of magnitude in $N$. The scaling validation confirms that the TO formulas capture the correct asymptotic complexity, not just point estimates at a single $N$.
+Figure~\ref{fig:scaling} shows predicted and measured energy against $N$: the model tracks the $O(N \log N)$ scaling of FFT, the $O(N)$ scaling of FIR, the command-dominated flat scaling of the Kalman filter, and the growth of the CNN and Transformer denoisers over two orders of magnitude in $N$. Figure~\ref{fig:fir} shows the classic FIR selection problem, direct convolution ($O(NM)$ MACs for filter length $M$) against FFT-based overlap-add ($O(N \log N)$): both the model and the measurements place the crossover between $N = 4096$ and $16384$, because the model carries cuFFT's split-radix cost and the memory traffic of the FFT approach.
 
-% Fig 4 placed before FIR subsection
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig4_fir_crossover}
-\caption{FIR direct vs.\ FFT-based convolution energy. The crossover shifts with signal length, correctly predicted by the TO model.}
+\caption{FIR direct vs.\ FFT-based convolution energy on the RTX 4090. The crossover shifts with signal length.}
 \label{fig:fir}
 \end{figure}
 
-\subsection{Case Study: FIR Crossover}
-
-A classic algorithm selection problem is whether to implement FIR filtering via direct convolution ($O(NM)$ MACs for filter length $M$) or FFT-based overlap-add ($O(N \log N)$). Figure~\ref{fig:fir} shows that both the TO model and measurements identify the crossover: direct convolution is cheaper at short filter lengths, while FFT convolution wins as $M$ grows. The TO model correctly predicts the crossover point because it accounts for cuFFT's split-radix cost and the memory overhead of the FFT approach.
-
 \subsection{Three Sequential Energy Regimes}
+\label{sec:regimes}
 
-Sequential algorithms on GPUs fall into three distinct regimes:
-
-\begin{enumerate}
-\itemsep0pt
-\item \textbf{Parallel} ($S_o = 0, S_f = 0$): All computation executes in a single kernel launch. Energy is governed by $\alpha_c T_c + \alpha_m T_m$.
-\item \textbf{Python-loop dispatch} ($S_o > 0$): Each timestep triggers a Python loop iteration launching $K$ CUDA kernels. Median per-launch cost: 385\,$\mu$J (RTX 4090), 125\,$\mu$J (A100).
-\item \textbf{Fused-sequential} ($S_f > 0$): A single C++/CUDA kernel processes all $N$ timesteps serially. Per-step cost: 56\,$\mu$J (RTX 4090), 45\,$\mu$J (A100).
-\end{enumerate}
-
-The $\alpha_o / \alpha_f$ ratio ranges from 2.8$\times$ (A100) to 6.9$\times$ (RTX 4090), confirming that Python-loop dispatch is substantially more expensive per step than fused-sequential execution. This ratio is consistent with the physical picture: $\alpha_o$ includes host-side Python interpreter and CUDA driver overhead, while $\alpha_f$ reflects only GPU-side serial execution cost.
+Sequential algorithms on GPUs fall into three regimes. \emph{Parallel:} all work executes in a few commands ($S_o \leq 14$ per invocation) whose cost is amortized over the batch; energy is $\alpha_c T_c + \alpha_m T_m$ to within \launchSharePara\% on the RTX 4090. \emph{Python-loop dispatch:} each iteration issues 7 to 54 commands, and command cost dominates energy: \alphaOa\,$\mu$J per command on the RTX 4090 and \alphaOb\,$\mu$J on the A100. \emph{Fused-sequential:} a single kernel processes all $N$ timesteps serially at \alphaFa\ and \alphaFb\,$\mu$J per step. The ratio $\alpha_o / \alpha_f$ is \alphaOoverFa\ on the laptop and \alphaOoverFb\ on the server: a fused step costs a quarter of a command on the former and one and a half commands on the latter. Fusing a Python loop that issues $K$ commands per timestep into one kernel therefore reduces the per-timestep cost by $K \alpha_o / \alpha_f$: for the measured $K$ of 7 (LMS) to 54 (UKF), \fusionGainMina\ to \fusionGainMaxa$\times$ on the laptop host and \fusionGainMinb\ to \fusionGainMaxb$\times$ on the server host. The two mechanisms are distinct in kind (host-side idling versus GPU-side serial execution), and the payoff of fusion is a property of the system, not of the algorithm.
 
 % =========================================================================
 \section{CPU vs GPU Analysis}
 \label{sec:cpugpu}
 % =========================================================================
 
-% Fig 7 placed before the section text
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig7_cpu_vs_gpu}
@@ -288,15 +277,13 @@ The $\alpha_o / \alpha_f$ ratio ranges from 2.8$\times$ (A100) to 6.9$\times$ (R
 \label{fig:cpugpu}
 \end{figure}
 
-We compare energy per signal between the i9-14900HX CPU ($B = 1$) and the RTX 4090 GPU (energy per call divided by batch size) across 129 common (algorithm, $N$) configurations. GPU energy is normalized by $B$ to obtain a fair per-signal comparison.
+We compare energy per signal between the i9-14900HX CPU ($B = 1$) and the RTX 4090 GPU (energy per call divided by batch size) across 129 common (algorithm, $N$) configurations; Fig.~\ref{fig:cpugpu} shows the ratio by category. Three regimes emerge.
 
-Figure~\ref{fig:cpugpu} shows the CPU-to-GPU energy ratio by algorithm category. Three regimes emerge:
+\textbf{Parallel-batched algorithms} (transforms, filters, spectral, ML, compression): the GPU wins 84 of 85 comparisons, with a median efficiency advantage of 22$\times$. Batch parallelism amortizes command overhead across $B$ signals, and the GPU's throughput advantage dominates.
 
-\textbf{Parallel-batched algorithms} (transforms, filters, spectral, ML, compression): the GPU wins 84 of 85 comparisons, with a median efficiency advantage of 22$\times$. Batch parallelism amortizes kernel launch overhead across $B$ signals, and the GPU's throughput advantage dominates.
+\textbf{Sequential algorithms} (adaptive filters, state estimation): the CPU wins all 32 comparisons. The GPU's command cost (\alphaOa\,$\mu$J on this host) makes sequential algorithms highly inefficient on GPU. NLMS is 100$\times$ more energy-efficient on CPU, where the per-step overhead is a function call rather than a cross-device command.
 
-\textbf{Sequential algorithms} (adaptive filters, state estimation): the CPU wins all 32 comparisons. The GPU's Python-loop dispatch overhead ($\alpha_o = 385$\,$\mu$J/launch) makes sequential algorithms highly inefficient on GPU. NLMS is 100$\times$ more energy-efficient on CPU, where the per-step overhead is simply a function call rather than a cross-device kernel launch.
-
-\textbf{Decomposition} (SVD, PCA, FastICA, NMF): mixed results, with the CPU winning 6 of 8 comparisons. These algorithms involve eigendecomposition or matrix factorization that does not parallelize across the batch dimension. SVD shows a crossover: the CPU wins at $N = 256$ (ratio 0.59$\times$) but the GPU wins at $N \geq 1024$ (ratio 2.45$\times$) as cuSOLVER amortizes its fixed overhead.
+\textbf{Decomposition} (SVD, PCA, FastICA, NMF): mixed, with the CPU winning 6 of 8 comparisons; these factorizations do not parallelize across the batch. SVD shows a crossover: the CPU wins at $N = 256$ (ratio 0.59$\times$) and the GPU at $N \geq 1024$ (2.45$\times$) as cuSOLVER amortizes its fixed overhead.
 
 The GPU's advantage decreases with signal length: the median CPU-to-GPU ratio drops from 23$\times$ at $N = 256$ to 4.3$\times$ at $N = 16384$, because per-signal compute grows while batch amortization remains constant.
 
@@ -305,38 +292,27 @@ The GPU's advantage decreases with signal length: the median CPU-to-GPU ratio dr
 \label{sec:discussion}
 % =========================================================================
 
-% Fig 6 placed before the discussion text that references it
+\textbf{What the residual is.} Figure~\ref{fig:effto} plots measured energy per compute TO for every parallel-regime configuration. Across floating-point kernels the per-algorithm median spans \effDfta\ fJ/TO (direct DFT, a dense complex GEMM at peak throughput) through \effFfta\ (FFT) to about 250 (wavelets), a 60$\times$ range that falls with the work per invocation; sort-based, factorization and serial kernels sit three to five decades higher (SVD \effSvda, PCA \effPcaa, median filter \effMediana\ fJ/TO on the RTX 4090). The fitted $\alpha_c$ (\alphaCa\ fJ/TO) is the energy per operation of the largest, highest-throughput kernels. Energy per counted operation on a GPU is a throughput variable, not a constant; this bounds any constant-cost-per-operation model, TO- or FLOP-based, and is why absolute error reaches a factor of two on a quarter of the configurations while ranking is right \hhPooledPct\% of the time. The DRAM traffic of the composite FFT-based algorithms is 5 to 9$\times$ the analytical $T_m$ because eager execution materializes every intermediate; counting those intermediates is the next refinement of the memory term.
+
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures/fig6_cross_gpu}
-\caption{Per-algorithm energy on RTX 4090 vs.\ A100, colored by category. Dashed lines show constant energy ratios.}
-\label{fig:crossgpu}
+\includegraphics[width=\columnwidth]{figures/fig9_energy_per_to}
+\caption{Measured energy per compute TO against compute TOs per invocation for the parallel regime, both GPUs. Dashed line: fitted $\alpha_c$.}
+\label{fig:effto}
 \end{figure}
 
-\textbf{Comparison to FLOP counting.} Standard FLOP-based energy models make three systematic errors that the TO framework corrects. First, they overcount FFT operations by 30\% (Cooley-Tukey vs.\ split-radix). Second, they overcount complex arithmetic by 2$\times$ on FMA hardware. Third, they entirely ignore sequential dispatch overhead, which dominates energy for adaptive and estimation algorithms. A single-parameter model $E = \alpha \cdot \text{TO}_{\text{total}}$ (equivalent to FLOP counting with calibration) achieves $r^2 < 0.6$ on our data; separating compute, memory, and dispatch terms is essential.
+\textbf{Comparison to FLOP counting.} FLOP-based models overcount FFT operations by 30\%, overcount complex arithmetic by 2$\times$ on FMA hardware, and ignore command dispatch, which dominates the energy of adaptive and estimation algorithms; the single-coefficient model above ($r^2$ = \baseRtwoa\ and \baseRtwob; \baseWithinTwoa\% and \baseWithinTwob\% within 2$\times$) is what calibrated FLOP counting achieves on this data.
 
-\textbf{Limitations.} The model has three known limitations. (1)~The single $\alpha_o$ coefficient cannot distinguish algorithms with different per-launch compute densities (e.g., Kalman at 15 launches/iter vs.\ UKF at 43, LMS at 7 vs.\ RLS at 12), causing 4 of 6 ranking failures on each GPU. A per-algorithm $\alpha_o$ would fix this but would sacrifice generalizability. (2)~Factorization algorithms (SVD, PCA) have implementation-dependent operation counts that no fixed formula can predict; the TO model uses analytical lower bounds and absorbs the gap through $\alpha_c$. (3)~CPU energy measurements at small $N$ have high relative noise ($\sim$37\% for lightweight algorithms at $N = 256$) due to idle power variability.
+\textbf{Scope.} (1)~One $\alpha_o$ per system cannot express that a synchronizing copy costs more than a launch on one host and less on another (Kalman vs.\ UKF). (2)~Iterative factorizations (SVD, PCA, MUSIC) have implementation-dependent counts; the model uses analytical lower bounds. (3)~Command counts were measured on the RTX 4090's software stack and applied to the A100's configurations. (4)~CPU energy at small $N$ carries about 37\% relative noise from idle-power variability.
 
-Figure~\ref{fig:crossgpu} compares per-algorithm energy between the two GPUs. Most algorithms show a consistent cross-GPU energy ratio within each category, supporting the claim that the TO framework transfers across architectures with only the $\alpha$ coefficients refitted.
-
-% Fig 5 placed before the practical implications text that references it
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig5_denoising}
-\caption{Energy comparison of classical (Wiener) vs.\ ML-based (CNN, LSTM, Transformer) denoising across signal lengths.}
-\label{fig:denoising}
-\end{figure}
-
-\textbf{Practical implications.} The results suggest three guidelines for signal processing practitioners: (1)~Sequential algorithms should run on CPU, not GPU, unless a fused CUDA kernel is available (3 to 7$\times$ per-step energy reduction from kernel fusion). (2)~FFT-based algorithms should pad inputs to power-of-2 lengths; non-power-of-2 sizes incur up to 5$\times$ energy penalties from cuFFT's mixed-radix fallback. (3)~For algorithm selection decisions (e.g., FIR direct vs.\ FFT convolution), the TO model provides energy rankings that agree with measurement 80\% of the time without requiring hardware access.
-
-Figure~\ref{fig:denoising} illustrates guideline~(3) for the denoising use case. The Wiener filter is 10 to 50$\times$ more energy-efficient than the CNN denoiser and 100 to 500$\times$ cheaper than the LSTM denoiser, while the Transformer denoiser is the most expensive. The TO model correctly ranks all four approaches, providing practitioners with energy-aware algorithm selection without dedicated measurement infrastructure.
+\textbf{Practical implications.} (1)~Sequential algorithms should run on CPU unless a fused CUDA kernel is available; fusion pays \fusionGainMina\ to \fusionGainMaxa$\times$ per timestep on a laptop host and \fusionGainMinb\ to \fusionGainMaxb$\times$ on a server host, so measure $\alpha_o$ on the deployment host before deciding. (2)~FFT-based algorithms should pad to power-of-two lengths; non-power-of-two sizes incur up to 5$\times$ energy penalties from cuFFT's mixed-radix fallback. (3)~For algorithm selection (FIR direct vs.\ FFT convolution, classical vs.\ learned denoising), the model's rankings agree with measurement \hhPooledPct\% of the time without hardware access; for the denoising case it correctly orders the Wiener filter (10 to 50$\times$ cheaper than the CNN denoiser and 100 to 500$\times$ cheaper than the LSTM), the CNN, the LSTM, and the Transformer.
 
 % =========================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 % =========================================================================
 
-We have presented a four-parameter energy model grounded in transistor-level operation costs that predicts GPU energy consumption for 37 signal processing algorithms with $r^2 \geq 0.947$ across two GPU architectures. Nsight Compute profiling validates that standard operation-counting assumptions (Cooley-Tukey FFT, 8-op complex MAC) systematically overpredict by 30 to 100\%, and that corrected formulas match hardware instruction counts to within 1\%. The identification of three sequential energy regimes, with per-step costs differing by 3 to 7$\times$ between Python-loop dispatch and fused-sequential execution, provides a principled basis for deciding when to use GPU vs.\ CPU execution. Our systematic comparison across 37 algorithms confirms that sequential signal processing algorithms are 10 to 100$\times$ more energy-efficient on CPU, a result with direct implications for energy-aware system design.
+We have presented a four-parameter energy model grounded in transistor-level operation costs whose inputs are measured: analytical operation counts checked against Nsight Compute for all 37 algorithms, and per-invocation GPU command counts from Nsight Systems for every configuration. On two GPU architectures it predicts energy with median errors of \mdapea\% and \mdapeb\%, places \withinTwoa\% and \withinTwob\% of configurations within a factor of two, and ranks \hhPooledPct\% of head-to-head algorithm pairs correctly, with leave-one-algorithm-out results within a few points. Instruction counts confirm the split-radix FFT and 4-FMA complex MAC corrections and show that library kernels on tiny matrices execute fixed work per launch, which the dispatch term prices. The per-command cost is a property of the host (\alphaOa\ vs.\ \alphaOb\,$\mu$J), which sets the payoff of kernel fusion (\fusionGainMina\ to \fusionGainMaxa$\times$ per timestep on the laptop, \fusionGainMinb\ to \fusionGainMaxb$\times$ on the server), and sequential signal processing algorithms are 10 to 100$\times$ more energy-efficient on CPU. Measured energy per operation spans 60$\times$ across floating-point kernels; making that throughput dependence part of the model is the next step.
 
 \bibliographystyle{IEEEbib}
 \bibliography{refs}
