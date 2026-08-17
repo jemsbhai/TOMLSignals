@@ -1,12 +1,12 @@
 {
   "pipeline": "analyze_results_v1",
-  "started_utc": "2026-08-17T22:05:36+00:00",
+  "started_utc": "2026-08-17T22:06:49+00:00",
   "environment": {
     "python": "3.12.2",
     "platform": "Windows-11-10.0.26200-SP0",
     "numpy": "2.0.2",
     "scipy": "1.17.1",
-    "git_commit": "abb1adb7f9dd65483d7dc67cf13f95142d8487db",
+    "git_commit": "f9c586df760745d0c0c6079bfc83a70e3353b954",
     "git_dirty": true
   },
   "model": "E = a_c TO_c + a_m TO_m + a_o S_o + a_f S_f; S_o = measured GPU commands (kernels+memcpy+memset) per invocation for every algorithm (F-022); unweighted NNLS",
