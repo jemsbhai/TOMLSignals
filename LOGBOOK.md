@@ -129,6 +129,9 @@ DHCe's concern is confirmed in substance, though not for the stated reason (the 
 - data/camera_ready/exp_cr_001_cv_results.json
 - data/camera_ready/exp_cr_001_per_algorithm.csv
 
+### Addendum 2026-08-17 (after EXP-CR-004)
+Observation 5 above misread the direction of two algorithms: filterbank_32ch on the 4090 is 2x over-predicted (signed median ratio 1.98), not under; music is mixed across N (median ratio 1.62 on the 4090). esprit is 50x under on the 4090 only. F-019 carries the same erratum. The remaining statements stand.
+
 ---
 
 ## EXP-CR-002: Nsight Compute Validation of the Split-Radix FFT Count Across N
@@ -247,5 +250,113 @@ count within ~20%.
 
 ### Results / Observations / Interpretation
 [to be filled after run]
+
+---
+
+## EXP-CR-004: Estimator Comparison and Launch-Term / Utilization Diagnostics
+
+**Date**: 2026-08-17 (EDT)
+**Researcher**: Muntaser Syed
+**Type**: computational (existing measurements and existing NCU profiles; no new GPU runs)
+**Status**: completed 2026-08-17 (run at 16:40 UTC); Part 2 incomplete, see Results
+
+### Motivation
+EXP-CR-001 (F-019) showed that unweighted linear least squares over five
+decades of energy yields coefficients set by one to three algorithms
+(transformer_denoiser for alpha_c / alpha_m; the IIR Python-fallback points for
+the A100's alpha_o), median errors of 44% / 68%, and a fat tail of algorithms
+10x to 300x under (median, svd, pca, music, esprit, iir_butter4 on the 4090,
+filterbank_32ch on the 4090) plus direct_dft 3 to 4x over. Before any change to
+the paper, decide with data (a) whether a relative-error estimator gives
+population-representative coefficients, and (b) whether the tail is explained
+by a per-kernel-launch cost and by utilization-dependent energy per operation.
+
+### Hypotheses
+H1. Relative-error NNLS (minimize sum of ((E_pred - E)/E)^2 subject to alpha >= 0,
+same linear model, same physical coefficients) lowers in-sample and LOAO MdAPE on
+both GPUs and raises the within-2x fraction by at least 10 points, at the cost of
+larger absolute error on the largest-energy configurations and a lower linear r2;
+head-to-head accuracy is unchanged or better.
+H2. Under relative-error NNLS the LOAO coefficient ranges shrink (no single
+held-out algorithm moves alpha_c or alpha_m by more than 1.5x) and alpha_c on the
+two GPUs stays within 1.5x of each other.
+H3. For the 23 NCU-profiled algorithms at B = 1 on the 4090, the residual energy
+after alpha_c*T_c + alpha_m*T_m, divided by the NCU kernel count, is positive and
+of similar magnitude (tens to hundreds of uJ) across the launch-heavy algorithms
+(svd 137, pca 166, mdct 77, transformer 24, dst 12 kernels), and refitting those
+23 points with an added per-launch term reduces their MdAPE substantially.
+H4. Effective energy per compute TO (E_meas / T_c) for parallel configurations
+falls with per-invocation T_c and flattens at large T_c, consistent with fixed
+per-invocation costs dominating small workloads; direct_dft at large T_c sits
+below alpha_c.
+
+### Independent variables
+- Estimator: v0 unweighted NNLS ("ls"); relative-error NNLS ("rel"); relative-error
+  NNLS with each algorithm weighted equally regardless of its number of
+  configurations ("rel_alg", robustness check only)
+- Fold scheme: in-sample, LOAO, LOCO, leave-one-category-out; cross-GPU full
+  transfer and the two most interpretable partial transfers
+- Diagnostic subsets: 23 NCU-profiled algorithms at B = 1 (4090); parallel-regime
+  configurations binned by decade of T_c (both GPUs)
+
+### Dependent variables / metrics
+- Same metric set as EXP-CR-001; per-algorithm MdAPE under each estimator;
+  coefficient values and LOAO ranges under each estimator
+- Residual per kernel (uJ), energy per NCU FP32 instruction (pJ), effective fJ/TO
+
+### Control conditions
+- Data, design matrix and validity filter identical to EXP-CR-001 (imports
+  analyze_cv.load_gpu; SHA-256 recorded); "ls" must reproduce EXP-CR-001 exactly
+- NCU inputs: v0 data/ncu_profiles/ncu_summary.json (unmodified)
+
+### Protocol
+1. `python analyze_estimators.py` from the repo root
+2. Paste console output; save data/camera_ready/exp_cr_004_estimators.json and
+   exp_cr_004_console.txt
+3. Decide estimator and whether to proceed to kernel-count collection for all
+   configurations (would become EXP-CR-005)
+
+### Environment
+- **Hardware**: analysis only
+- **Software**: Windows, Python 3.12, numpy / scipy (recorded in JSON)
+- **Git commit**: c05076beaa22a3645cfe51058c8aafd1257d9afd (working tree dirty at run: analyze_estimators.py and LOGBOOK.md uncommitted)
+- **Seeds**: none
+
+### Results
+Console: `data/camera_ready/exp_cr_004_console.txt`; JSON: `exp_cr_004_estimators.json`. Control lines reproduce EXP-CR-001 exactly (ls: 44.3 / 0.9467 / 24-30 on the 4090; 68.0 / 0.9823 / 24-30 on the A100).
+
+**Part 1, estimators (in-sample | LOAO):**
+
+| | 4090 ls | 4090 rel | A100 ls | A100 rel |
+|---|---|---|---|---|
+| alpha_c fJ/TO | 13.6 [5.5, 13.7] | 5.5 [5.0, 10.7] | 15.2 [7.6, 15.3] | 8.0 [7.0, 12.1] |
+| alpha_m fJ/TO | 71.8 [58, 232] | 137.7 [109, 166] | 184.3 [164, 323] | 170.0 [130, 250] |
+| alpha_o uJ/launch | 385.4 [364, 401] | 308.6 [300, 326] | 125.2 [55, 126] | 38.1 [37, 43] |
+| alpha_f uJ/step | 55.7 | 61.8 | 45.3 | 49.2 |
+| MdAPE % | 44.3 / 49.4 | 45.9 / 50.4 | 68.0 / 76.2 | 39.6 / 43.8 |
+| MAPE % | 53.3 / 60.1 | 47.3 / 55.4 | 93.5 / 100.2 | 44.1 / 52.3 |
+| max APE % | 357 / 362 | 103 / 263 | 515 / 515 | 103 / 173 |
+| within 2x | 69.6 / 60.9 | 58.7 / 52.2 | 54.8 / 47.6 | 72.2 / 60.3 |
+| within 3x | 80.4 / 78.3 | 79.0 / 73.9 | 74.6 / 71.4 | 82.5 / 78.6 |
+| r2 linear | 0.947 / 0.731 | 0.731 / 0.688 | 0.982 / 0.654 | 0.544 / 0.523 |
+| head-to-head | 24 / 22 | 24 / 22 | 24 / 22 | 23 / 23 |
+
+rel_alg is indistinguishable from rel (all metrics within 1 point). By regime, in-sample MdAPE (within 2x): 4090 parallel ls 51.9 (55%) vs rel 58.0 (40%); python-loop ls 31.9 (100%) vs rel 24.2 (98%). A100 parallel ls 36.6 (70%) vs rel 47.2 (67%); python-loop ls 134.4 (25%) vs rel 31.3 (80%). Under rel the largest workloads are underpredicted about 2.5x (signed median ratio pred/meas: 4090 transformer 0.38, cnn 0.44; A100 transformer 0.52) and most mid-size parallel algorithms sit at 0.4 to 0.6, i.e. rel trades the top of the range for the sequential middle. Cross-GPU: rel does not transfer better than ls (rel full transfer 65.3% / 75.0% MdAPE vs ls 61.6% / 54.2%).
+
+**Part 2, launch diagnostic:** only 4 of 23 NCU configurations have a matching row in the fitted data set (mdct, pca, svd, lstm). The B = 1 configurations of the 19 parallel algorithms are not in `all_results.csv` (the paper's 138 points use B = 2048 or the largest feasible batch for parallel algorithms). B = 1 JSONs for those algorithms exist on disk but were produced by an earlier harness (5 s duration, idle 17 W, no thermal or sample fields, e.g. `fft_N4096_B1_fp32.json`) and are not comparable to the paper's measurements. On the four matched rows: residual energy per kernel after alpha_c T_c + alpha_m T_m is svd 457 uJ (137 kernels, E 64.4 mJ, model 1.8 mJ), pca 396 uJ (166 kernels, E 66.0 mJ, model 0.3 mJ), mdct 252 uJ (77 kernels, python-loop, S_o already counted), lstm 11.1 mJ per kernel (fused serial steps, not a launch cost). The svd and pca residual per launch (396 to 457 uJ) is the same magnitude as the Python-loop per-launch coefficient alpha_o = 385 uJ.
+
+**Part 3, effective energy per compute TO (parallel regime):** per-algorithm median E_meas / T_c on the 4090: direct_dft 4, filterbank 8, music 9, cnn 12, lstm 13, transformer 14, fft 18, dst 29, fir_fft 30, fir_direct 31, matched 32, hilbert 32, stft 38, wiener 51, dct 52, periodogram 54, savgol 79, dwt_db4 79, welch 87, jpeg 174, dwt_haar 242, esprit 898, svd 1541, pca 6321, iir (fused, 4090) 76,290, median 208,864 fJ/TO. A100: direct_dft 5, esprit 10, music 10, cnn 13, filterbank 13, lstm 14, transformer 15, fft 20 ... jpeg 178, svd 1010, pca 3062, median 260,058. By decade of T_c per invocation (4090): 1e10: median 93 (n=17), 1e11: 37, 1e12: 37, 1e13: 12, 1e14: 14 fJ/TO. So the FP-throughput algorithms span 4 to about 250 fJ/TO (60x), and the sort / factorization / serial algorithms sit 3 to 5 orders of magnitude higher; alpha_c (13.6 / 15.2 under ls) equals the energy per TO of the largest, highest-throughput workloads (dense complex GEMM, transformer, CNN, cuDNN LSTM), not of the population.
+
+**Code finding during interpretation (not from the run):** `KERNELS_PER_ITER["iir_butter4"] = 5` in shared/to_model.py ("Python fallback: ~5 ops per time step"), but the fallback `_lfilter_torch` in algorithms/filters.py issues about 22 kernel launches per sample for order 4 (mul, add, copy for y[n]; mul, mul, sub, add, copy for each of three state updates; mul, mul, sub, copy for the last). The A100's three IIR points therefore carry S_o about 4.4x too small; their per-launch cost of 125 uJ divided by 4.4 is about 28 uJ, in line with the 30 to 55 uJ that the other A100 sequential algorithms imply. This is a launch-count error, not a per-launch cost difference. To be validated by counting launches with torch.profiler (EXP-CR-005).
+
+### Observations
+1. H1 fails on the 4090 and holds on the A100. rel gives no MdAPE gain on the 4090 (45.9 vs 44.3) and loses 11 points of within-2x; on the A100 it halves the median error (39.6 vs 68.0) and adds 17 points of within-2x, but almost entirely by removing the IIR-driven alpha_o inflation, which the launch-count correction above addresses at the source. Ranking is 22 to 24 / 30 under either estimator.
+2. H2 holds: LOAO coefficient ranges shrink under rel (no held-out algorithm moves alpha_c by more than 2x or alpha_o by more than 15%); alpha_c across GPUs 5.5 vs 8.0 (1.45x). But rel underpredicts the largest workloads 2.5x because squared relative error is bounded below (-100%) and unbounded above, which biases the fit low; the two estimators describe different ends of a 60x spread that no single coefficient covers.
+3. H3 is supported where testable: svd and pca residual per cuSOLVER launch (457 and 396 uJ) equals alpha_o (385 uJ) within 20%, i.e. counting library launches in S_o would predict both to within about 15% without a new parameter (137 x 385 = 53 mJ vs 64 measured; 166 x 385 = 64 mJ vs 66 measured). The B = 1 diagnostic on the other 19 algorithms needs fresh measurements.
+4. H4 holds: energy per TO falls from about 90 fJ at 1e10 T_c to 12 to 14 fJ at 1e13 to 1e14, and direct_dft sits at 4 to 5 fJ/TO. Effective energy per counted operation is a throughput (utilization) variable spanning 60x across FP kernels and 10^3 to 10^5 x for sort, factorization and serial kernels.
+5. Correction to EXP-CR-001 observation 5: filterbank_32ch on the 4090 is 2x OVER-predicted (median ratio 1.98; LOAO 2.6x), not under; music is mixed across N (median ratio 1.62 on the 4090, 1.74 on the A100); esprit is 50x under on the 4090 but 1.75x over on the A100. jpeg (0.16 / 0.29), welch (0.26 / 0.49), wiener (0.37 / 0.66) and periodogram (0.39 / 0.81) are the consistent 2 to 6x under-predictions.
+
+### Interpretation
+Switching the estimator is not the fix: it moves the error between regimes without shrinking the spread, and its A100 gain is an artifact removable by correcting the IIR launch count. Keep the v0 unweighted NNLS (unchanged from the accepted paper), report the LOAO ranges of every coefficient in Table 3, and fix the launch counts: (i) correct KERNELS_PER_ITER for the IIR fallback and validate all entries with a profiler census; (ii) count library-internal launches (cuSOLVER svd, pca, eigendecomposition in music and esprit) in S_o, which the svd/pca residual per launch justifies quantitatively and which reinterprets alpha_o as a per-launch GPU idle cost rather than a Python-interpreter cost. The Part 3 spread is the paper's honest accuracy statement: the constant-energy-per-operation assumption holds within about 3x for high-throughput kernels and fails by orders of magnitude for sort, iterative factorization and serial code; that sentence, with the numbers, replaces "points cluster tightly along the identity line".
 
 ---
